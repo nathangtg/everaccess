@@ -1,0 +1,28 @@
+Me and my group are currently planning to develop a prototype for a digital will service. 
+The main idea is to have a centralized one stop place to manage all your assets since apparently most people has not yet thought of their digital assets upon their death which includes things such as digital image, cryptocurrency, passwords, account.
+Now on top of that we also plan to make revenues of it obviously. 
+Our solution as of now includes features such as: 
+* A platform to Organizes and stores users’ digital assets safely
+* Allows users to define access rules for their beneficiaries.
+* Ensures legal compliance, encryption, and privacy.
+* Securely store all accounts, passwords, and assets in one place.
+* Grant access to chosen individuals based on client needs.
+* Bank-grade data security and privacy protection.
+* Simple interface to manage, update, and view legacy status across various platforms.
+With our current revenue model as such: 
+* An annual licensing fee paid by partners, to offer EverAccess to clients as a value-added service.
+* A one-time fee for the guided service of unlocking, settling, and transferring the digital assets.
+* A recurring monthly fee (1 USD) to unlock all services. (Just to cover infra costs)
+With the problem identified as:
+* People leave behind vast digital footprints.
+* After death, loved ones face locked accounts, lost data, and financial confusion.
+* Current estate systems handle physical assets, but not digital ones.
+* Inaccessible assets
+And our garnered insight such as: 
+*  Low Awareness Among Young Adults
+* Digital Assets Are Fragmented
+* Legal & Privacy Restrictions
+
+Elicit all the technical requirements and  to claim the fragmented assets we aim to have the beneficiary upload the death certificate and what not. 
+
+Don't go too overboard, just elicit the requirements as of now.

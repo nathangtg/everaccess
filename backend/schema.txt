@@ -1,0 +1,204 @@
+Core Tables
+1. users
+sqlusers
+- user_id (PK, UUID)
+- email (UNIQUE, NOT NULL)
+- password_hash (NOT NULL)
+- first_name
+- last_name
+- phone_number
+- date_of_birth
+- created_at (TIMESTAMP)
+- updated_at (TIMESTAMP)
+- last_login (TIMESTAMP)
+- account_status (ENUM: active, suspended, deceased, deleted)
+- email_verified (BOOLEAN)
+- mfa_enabled (BOOLEAN)
+- mfa_secret (ENCRYPTED)
+2. subscription
+sqlsubscription
+- subscription_id (PK, UUID)
+- user_id (FK -> users.user_id)
+- plan_type (ENUM: free, premium, partner)
+- status (ENUM: active, expired, cancelled, pending)
+- start_date (TIMESTAMP)
+- end_date (TIMESTAMP)
+- payment_method_id
+- auto_renew (BOOLEAN)
+- created_at (TIMESTAMP)
+- updated_at (TIMESTAMP)
+3. beneficiaries
+sqlbeneficiaries
+- beneficiary_id (PK, UUID)
+- user_id (FK -> users.user_id) -- the account owner
+- email (NOT NULL)
+- first_name
+- last_name
+- phone_number
+- relationship (VARCHAR) -- spouse, child, friend, etc.
+- priority_level (INT) -- for multiple beneficiaries
+- added_date (TIMESTAMP)
+- status (ENUM: active, inactive, revoked)
+- notification_sent (BOOLEAN)
+4. assets
+sqlassets
+- asset_id (PK, UUID)
+- user_id (FK -> users.user_id)
+- asset_type (ENUM: login_credential, crypto_wallet, document, social_media, financial, other)
+- platform_name (VARCHAR) -- e.g., "Gmail", "Facebook", "Coinbase"
+- asset_name (VARCHAR) -- user-friendly name
+- username (ENCRYPTED)
+- password (ENCRYPTED)
+- recovery_email (ENCRYPTED)
+- recovery_phone (ENCRYPTED)
+- notes (ENCRYPTED, TEXT)
+- category (VARCHAR) -- for user organization
+- created_at (TIMESTAMP)
+- updated_at (TIMESTAMP)
+- last_accessed (TIMESTAMP)
+5. asset_files
+sqlasset_files
+- file_id (PK, UUID)
+- asset_id (FK -> assets.asset_id)
+- file_name (VARCHAR)
+- file_type (VARCHAR) -- MIME type
+- file_size (BIGINT) -- in bytes
+- encrypted_file_path (VARCHAR) -- S3/storage location
+- encryption_key_id (VARCHAR)
+- uploaded_at (TIMESTAMP)
+- description (TEXT)
+6. access_rules
+sqlaccess_rules
+- rule_id (PK, UUID)
+- user_id (FK -> users.user_id)
+- beneficiary_id (FK -> beneficiaries.beneficiary_id)
+- asset_id (FK -> assets.asset_id, NULLABLE) -- null means all assets
+- access_type (ENUM: full, view_only, download)
+- conditions (JSON) -- flexible field for complex rules
+- created_at (TIMESTAMP)
+- updated_at (TIMESTAMP)
+7. verification_requests
+sqlverification_requests
+- request_id (PK, UUID)
+- user_id (FK -> users.user_id) -- the deceased user
+- beneficiary_id (FK -> beneficiaries.beneficiary_id)
+- requester_email (VARCHAR)
+- request_date (TIMESTAMP)
+- status (ENUM: pending, under_review, approved, rejected)
+- reviewed_by (FK -> admin_users.admin_id, NULLABLE)
+- reviewed_at (TIMESTAMP, NULLABLE)
+- rejection_reason (TEXT, NULLABLE)
+- approval_expiry_date (TIMESTAMP, NULLABLE) -- time-limited access
+8. verification_documents
+sqlverification_documents
+- document_id (PK, UUID)
+- request_id (FK -> verification_requests.request_id)
+- document_type (ENUM: death_certificate, government_id, legal_authorization, other)
+- file_name (VARCHAR)
+- encrypted_file_path (VARCHAR)
+- uploaded_at (TIMESTAMP)
+- verified (BOOLEAN)
+9. access_logs
+sqlaccess_logs
+- log_id (PK, UUID)
+- user_id (FK -> users.user_id, NULLABLE)
+- beneficiary_id (FK -> beneficiaries.beneficiary_id, NULLABLE)
+- asset_id (FK -> assets.asset_id, NULLABLE)
+- action_type (ENUM: login, view_asset, download, update, delete, access_granted)
+- ip_address (VARCHAR)
+- user_agent (TEXT)
+- timestamp (TIMESTAMP)
+- status (ENUM: success, failed, blocked)
+- details (JSON)
+10. payments
+sqlpayments
+- payment_id (PK, UUID)
+- user_id (FK -> users.user_id)
+- subscription_id (FK -> subscription.subscription_id, NULLABLE)
+- amount (DECIMAL)
+- currency (VARCHAR)
+- payment_type (ENUM: monthly_subscription, guided_service, partner_license)
+- payment_status (ENUM: pending, completed, failed, refunded)
+- payment_method (ENUM: credit_card, paypal, bank_transfer)
+- transaction_id (VARCHAR) -- from payment gateway
+- payment_date (TIMESTAMP)
+- created_at (TIMESTAMP)
+11. partners
+sqlpartners
+- partner_id (PK, UUID)
+- company_name (VARCHAR, NOT NULL)
+- contact_email (VARCHAR)
+- contact_phone (VARCHAR)
+- license_type (VARCHAR)
+- license_start_date (TIMESTAMP)
+- license_end_date (TIMESTAMP)
+- annual_fee (DECIMAL)
+- status (ENUM: active, suspended, expired)
+- created_at (TIMESTAMP)
+- updated_at (TIMESTAMP)
+12. partner_clients
+sqlpartner_clients
+- client_id (PK, UUID)
+- partner_id (FK -> partners.partner_id)
+- user_id (FK -> users.user_id)
+- referral_date (TIMESTAMP)
+- commission_paid (BOOLEAN)
+13. encryption_keys
+sqlencryption_keys
+- key_id (PK, UUID)
+- user_id (FK -> users.user_id)
+- key_hash (VARCHAR) -- hashed version for reference
+- created_at (TIMESTAMP)
+- rotated_at (TIMESTAMP, NULLABLE)
+- status (ENUM: active, rotated, revoked)
+14. notifications
+sqlnotifications
+- notification_id (PK, UUID)
+- user_id (FK -> users.user_id, NULLABLE)
+- beneficiary_id (FK -> beneficiaries.beneficiary_id, NULLABLE)
+- notification_type (ENUM: subscription_expiry, verification_update, access_granted, system_alert)
+- subject (VARCHAR)
+- message (TEXT)
+- sent_at (TIMESTAMP)
+- read_at (TIMESTAMP, NULLABLE)
+- delivery_status (ENUM: pending, sent, failed)
+15. user_messages
+sqluser_messages
+- message_id (PK, UUID)
+- user_id (FK -> users.user_id) -- the deceased
+- beneficiary_id (FK -> beneficiaries.beneficiary_id, NULLABLE) -- specific or all
+- message_title (VARCHAR)
+- message_content (ENCRYPTED, TEXT)
+- created_at (TIMESTAMP)
+- delivery_condition (ENUM: upon_death, after_verification, scheduled_date)
+- delivered (BOOLEAN)
+- delivered_at (TIMESTAMP, NULLABLE)
+16. admin_users
+sqladmin_users
+- admin_id (PK, UUID)
+- email (UNIQUE, NOT NULL)
+- password_hash (NOT NULL)
+- first_name
+- last_name
+- role (ENUM: super_admin, support, verifier)
+- created_at (TIMESTAMP)
+- last_login (TIMESTAMP)
+- status (ENUM: active, inactive)
+Key Design Considerations:
+
+Encryption: Fields marked as ENCRYPTED should be encrypted at the application layer before storage
+UUIDs: Using UUIDs instead of auto-increment IDs for better security and distributed systems
+Soft Deletes: Consider adding deleted_at fields if you want to implement soft deletes
+Indexes: Create indexes on frequently queried fields (user_id, email, status fields, timestamps)
+JSON Fields: Used for flexible data (conditions, details) where structure may vary
+Audit Trail: The access_logs table provides comprehensive tracking
+
+Relationships Summary:
+
+One user → Many assets
+One user → Many beneficiaries
+One beneficiary → Many access_rules
+One asset → Many access_rules
+One verification_request → Many verification_documents
+One user → One subscription
+One partner → Many partner_clients

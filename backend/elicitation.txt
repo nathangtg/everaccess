@@ -1,0 +1,252 @@
+MVP Scope: Core Features + Crypto Asset Distribution
+1. User Management & Authentication (Simplified)
+
+Email/password registration and login
+Basic session management (JWT tokens, 24-hour expiry)
+Role-based access:
+
+Account Owner (regular user)
+Beneficiary (limited access)
+Admin (verification reviewer)
+
+
+Simple password reset via email token
+MFA - defer to production
+
+2. Asset Storage & Management
+Priority Assets:
+
+Login Credentials: username, password, URL, notes
+Crypto Wallets (MOCK):
+
+Wallet type (Bitcoin, Ethereum, etc.)
+Wallet address (mock)
+Private key/seed phrase (encrypted, mock data)
+Balance (mock amount in USD)
+Percentage allocation to beneficiaries
+
+
+Basic Documents: PDF/image upload for important files
+
+Features:
+
+Simple categorization (Crypto, Passwords, Documents)
+Basic metadata (name, type, date added, notes)
+File upload with 10MB limit per file
+
+3. Crypto Distribution Logic (Mock Implementation)
+
+Asset allocation interface:
+
+Assign percentages to beneficiaries per crypto asset
+Visual percentage calculator (must total 100%)
+Validation: ensure allocations don't exceed 100%
+
+
+Mock disbursement simulation:
+
+Calculate distribution amounts based on percentages
+Generate mock "transaction IDs"
+Display distribution summary to beneficiaries
+Status tracking (pending → approved → disbursed)
+
+
+
+Example Flow:
+User has 1.5 BTC ($60,000)
+- Beneficiary A: 60% = 0.9 BTC ($36,000)
+- Beneficiary B: 40% = 0.6 BTC ($24,000)
+4. Data Security & Encryption (Basic)
+
+Application-level encryption for sensitive fields:
+
+Passwords
+Crypto private keys/seeds
+Personal notes
+
+
+Use Python's cryptography library with Fernet (symmetric encryption)
+Encryption key stored in environment variables (per-user keys later)
+HTTPS/TLS for local dev (self-signed cert)
+Password hashing with bcrypt
+
+5. Beneficiary Management
+
+Add beneficiaries: name, email, relationship
+Assign asset access rules:
+
+Select specific assets OR all assets
+Define crypto allocation percentages
+
+
+Beneficiary notification (email when added)
+Simple list view with edit/remove capabilities
+
+6. Verification & Trigger Mechanism (Manual)
+Beneficiary Request Flow:
+
+Beneficiary receives notification of their designation
+When needed, beneficiary uploads:
+
+Death certificate (PDF/image)
+Government ID
+Relationship proof (optional)
+
+
+Admin reviews in admin panel
+Admin approves/rejects with notes
+Upon approval, beneficiary gets time-limited access (7 days)
+
+Admin Tools:
+
+Verification queue dashboard
+Document viewer
+Approve/reject buttons with reason field
+Email notifications on decision
+
+7. Beneficiary Portal
+Post-Verification Access:
+
+Separate login for beneficiaries
+View assigned assets (passwords revealed, crypto details)
+Crypto distribution summary:
+
+Allocated amount and percentage
+Mock wallet address to receive funds
+"Disbursement status" indicator
+Mock transaction ID once "disbursed"
+
+
+Download documents
+View messages from deceased (optional)
+Access expires after 7 days (configurable)
+
+8. Payment Integration (Simplified)
+
+Stripe test mode for $1/month subscription
+Basic subscription status (active/expired)
+Manual payment link (no auto-renewal for prototype)
+Partner licensing - defer
+Invoice generation - defer
+
+9. User Interface (Minimal Viable)
+Account Owner Dashboard:
+
+Asset summary cards (total count by type)
+Quick add asset button
+Beneficiary list with status
+Profile settings
+
+Asset Management:
+
+List view with filters (Crypto, Passwords, Documents)
+Add/Edit forms with crypto allocation interface
+Delete with confirmation
+
+Crypto Allocation Interface:
+
+Drag sliders or input fields for percentages
+Real-time calculation display
+Visual progress bars showing allocations
+Validation warnings if total ≠ 100%
+
+Beneficiary Dashboard:
+
+Assets grid view
+Crypto distribution breakdown
+Download buttons
+Access timer (days remaining)
+
+Admin Panel:
+
+Verification queue table
+User management
+System statistics
+
+10. Database (Local PostgreSQL)
+Essential Tables:
+
+users
+beneficiaries
+assets
+crypto_assets (extends assets)
+crypto_allocations
+access_rules
+verification_requests
+verification_documents
+access_logs
+payments (basic)
+
+11. Email Notifications (Local Testing)
+Use Mailhog or similar for local email testing:
+
+Beneficiary designation notification
+Verification request submitted
+Verification approved/rejected
+Access expiring soon (2 days before)
+Subscription expiring
+
+12. Infrastructure (Local Development)
+
+Docker Compose setup:
+
+FastAPI backend
+Next.js frontend
+PostgreSQL database
+Redis (for sessions/caching)
+Mailhog (email testing)
+MinIO (S3-compatible storage for files)
+
+
+
+
+Deferred to Production
+
+Real crypto wallet integration
+MFA/2FA
+Advanced encryption (per-user keys, key rotation)
+Partner licensing
+Advanced analytics
+Automated document verification (OCR/AI)
+Real payment gateway with webhooks
+CDN for file delivery
+Compliance certifications
+Advanced audit logging
+
+
+Mock Crypto Implementation Details
+Crypto Asset Schema Addition:
+pythoncrypto_assets
+- crypto_asset_id (PK, FK -> assets.asset_id)
+- wallet_type (ENUM: bitcoin, ethereum, usdt, etc.)
+- wallet_address (VARCHAR, mock)
+- private_key (ENCRYPTED, mock)
+- seed_phrase (ENCRYPTED, mock)
+- balance_usd (DECIMAL) - mock amount
+- balance_crypto (DECIMAL) - mock amount
+- last_updated (TIMESTAMP)
+Crypto Allocation Schema:
+pythoncrypto_allocations
+- allocation_id (PK, UUID)
+- crypto_asset_id (FK -> crypto_assets.crypto_asset_id)
+- beneficiary_id (FK -> beneficiaries.beneficiary_id)
+- percentage (DECIMAL) - must sum to 100 per asset
+- allocated_amount_usd (DECIMAL) - calculated
+- allocated_amount_crypto (DECIMAL) - calculated
+- disbursement_status (ENUM: pending, approved, disbursed)
+- mock_transaction_id (VARCHAR)
+- disbursed_at (TIMESTAMP)
+Mock Disbursement Logic:
+pythondef calculate_crypto_distribution(crypto_asset_id):
+    """Calculate and generate mock disbursements"""
+    asset = get_crypto_asset(crypto_asset_id)
+    allocations = get_allocations(crypto_asset_id)
+    
+    for allocation in allocations:
+        allocation.allocated_amount_usd = asset.balance_usd * (allocation.percentage / 100)
+        allocation.allocated_amount_crypto = asset.balance_crypto * (allocation.percentage / 100)
+        allocation.mock_transaction_id = f"MOCK-{uuid.uuid4().hex[:16]}"
+        allocation.disbursement_status = "disbursed"
+        allocation.disbursed_at = datetime.now()
+    
+    return allocations
