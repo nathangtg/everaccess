@@ -4,7 +4,7 @@ from typing import List
 from ..database import connection
 from ..schemas import admin as admin_schema, user as user_schema
 from ..services import admin_service, user_service
-from ..routes.assets import get_current_user # Reusing this for authentication purposes
+from ..routes.assets import get_current_user 
 from ..database.models import user as user_model
 
 router = APIRouter(
@@ -13,12 +13,11 @@ router = APIRouter(
 )
 
 # A mock dependency to ensure the user is an admin.
-# In a real application, this would involve checking the user's role.
 def get_current_admin(current_user: user_model.User = Depends(get_current_user)):
     # For now, we assume any logged-in user is an admin for prototyping.
     # In a real application, you would check current_user.role or similar.
-    # if current_user.role != "admin":
-    #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not an admin")
+    if current_user.role != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not an admin")
     return current_user
 
 @router.get("/users", response_model=List[admin_schema.UserAdminView])
