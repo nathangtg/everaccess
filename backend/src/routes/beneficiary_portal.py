@@ -4,7 +4,7 @@ from typing import List
 from ..database import connection
 from ..schemas import asset as asset_schema, crypto as crypto_schema
 from ..services import asset_service, crypto_service
-from ..routes.assets import get_current_user
+from ..dependencies import get_current_user
 from ..database.models import user as user_model
 
 router = APIRouter(

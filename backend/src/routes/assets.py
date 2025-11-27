@@ -4,34 +4,13 @@ from typing import List, Optional
 from ..database import connection
 from ..schemas import asset as asset_schema
 from ..services import asset_service
-from ..utils.security import decode_access_token
-from fastapi.security import OAuth2PasswordBearer
-from ..services import user_service
+from ..dependencies import get_current_user
 from ..database.models import user as user_model
 
 router = APIRouter(
     prefix="/assets",
     tags=["Assets"],
 )
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
-
-def get_current_user(db: Session = Depends(connection.get_db), token: str = Depends(oauth2_scheme)):
-    email = decode_access_token(token)
-    if email is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    user = user_service.get_user_by_email(db, email=email)
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    return user
 
 @router.post("/", response_model=asset_schema.Asset)
 def create_asset(

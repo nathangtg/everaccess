@@ -6,25 +6,12 @@ from ..schemas import user_message as message_schema
 from ..services import message_service
 from ..utils import security
 from ..database.models.user import User
+from ..dependencies import get_current_user
 
 router = APIRouter(
     prefix="/messages",
     tags=["Time Capsule Messages"],
 )
-
-def get_current_user(token: str = Depends(security.oauth2_scheme), db: Session = Depends(connection.get_db)):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    email = security.decode_access_token(token)
-    if email is None:
-        raise credentials_exception
-    user = db.query(User).filter(User.email == email).first()
-    if user is None:
-        raise credentials_exception
-    return user
 
 @router.post("/", response_model=message_schema.UserMessage)
 def create_message(

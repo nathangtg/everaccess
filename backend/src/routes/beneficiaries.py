@@ -8,7 +8,7 @@ from ..utils.security import decode_access_token
 from fastapi.security import OAuth2PasswordBearer
 from ..services import user_service
 from ..database.models import user as user_model
-from ..routes.assets import get_current_user
+from ..dependencies import get_current_user
 
 router = APIRouter(
     prefix="/beneficiaries",

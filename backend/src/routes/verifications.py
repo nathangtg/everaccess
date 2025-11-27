@@ -4,7 +4,7 @@ from typing import List
 from ..database import connection
 from ..schemas import verification as verification_schema
 from ..services import verification_service
-from ..routes.assets import get_current_user
+from ..dependencies import get_current_user
 from ..database.models import user as user_model
 
 router = APIRouter(
