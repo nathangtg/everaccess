@@ -5,7 +5,7 @@ from ..database import connection
 from ..schemas import verification as verification_schema
 from ..services import verification_service
 from ..dependencies import get_current_user
-from ..database.models import user as user_model
+from ..database.models import user as user_model, beneficiary as beneficiary_model
 
 router = APIRouter(
     prefix="/verifications",
@@ -18,9 +18,16 @@ def submit_verification_request(
     db: Session = Depends(connection.get_db),
     current_user: user_model.User = Depends(get_current_user), # Assuming the requester is a registered user
 ):
-    # In a real scenario, the beneficiary might not be a registered user yet.
-    # For simplicity, we assume the beneficiary is a user and can be authenticated.
-    return verification_service.create_verification_request(db, request=request, beneficiary_id=current_user.user_id)
+    # Lookup beneficiary
+    beneficiary = db.query(beneficiary_model.Beneficiary).filter(
+        beneficiary_model.Beneficiary.user_id == request.user_id,
+        beneficiary_model.Beneficiary.email == current_user.email
+    ).first()
+
+    if not beneficiary:
+         raise HTTPException(status_code=403, detail="You are not listed as a beneficiary for this user.")
+
+    return verification_service.create_verification_request(db, request=request, beneficiary_id=beneficiary.beneficiary_id)
 
 @router.post("/requests/{request_id}/documents")
 async def upload_verification_document(
@@ -36,6 +43,45 @@ async def upload_verification_document(
         file_name=file.filename,
     )
     return verification_service.add_document_to_request(db, request_id=request_id, document=document)
+
+@router.post("/inheritance-claim", response_model=verification_schema.VerificationRequest)
+async def claim_inheritance(
+    target_user_email: str = Form(...),
+    file: UploadFile = File(...),
+    db: Session = Depends(connection.get_db),
+    current_user: user_model.User = Depends(get_current_user), # Beneficiary must be logged in
+):
+    # 1. Find target user
+    target_user = db.query(user_model.User).filter(user_model.User.email == target_user_email).first()
+    if not target_user:
+        raise HTTPException(status_code=404, detail="Target user not found")
+
+    # 2. Create Verification Request
+    # We assume the requester is the beneficiary
+    request_create = verification_schema.VerificationRequestCreate(
+        requester_email=current_user.email,
+        user_id=target_user.user_id,
+    )
+    
+    # Lookup beneficiary
+    beneficiary = db.query(beneficiary_model.Beneficiary).filter(
+        beneficiary_model.Beneficiary.user_id == target_user.user_id,
+        beneficiary_model.Beneficiary.email == current_user.email
+    ).first()
+
+    if not beneficiary:
+         raise HTTPException(status_code=403, detail="You are not listed as a beneficiary for this user.")
+
+    new_request = verification_service.create_verification_request(db, request=request_create, beneficiary_id=beneficiary.beneficiary_id)
+
+    # 3. Add Death Certificate Document
+    document = verification_schema.VerificationDocumentCreate(
+        document_type="death_certificate",
+        file_name=file.filename,
+    )
+    verification_service.add_document_to_request(db, request_id=new_request.request_id, document=document)
+
+    return new_request
 
 
 # Admin routes
