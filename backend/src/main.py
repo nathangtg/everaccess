@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .database.base import Base
 from .database.connection import engine
-from .routes import auth, assets, beneficiaries, crypto, verifications, beneficiary_portal
+from .routes import auth, assets, beneficiaries, crypto, verifications, beneficiary_portal, messages
 
 app = FastAPI()
 
@@ -21,6 +21,7 @@ app.include_router(beneficiaries.router)
 app.include_router(crypto.router)
 app.include_router(verifications.router)
 app.include_router(beneficiary_portal.router)
+app.include_router(messages.router)
 
 
 def create_tables():

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Bitcoin } from 'lucide-react';
+import { Plus, Bitcoin, PieChart } from 'lucide-react';
 import api from '@/lib/api';
 import { Asset } from '@/types';
 
@@ -68,7 +68,7 @@ export default function CryptoPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {assets.map((asset) => (
-            <div key={asset.asset_id} className="group bg-white rounded-2xl shadow-sm hover:shadow-md border border-orange-100 p-6 transition-all hover:-translate-y-1">
+            <Link key={asset.asset_id} href={`/dashboard/crypto/${asset.asset_id}`} className="group bg-white rounded-2xl shadow-sm hover:shadow-md border border-orange-100 p-6 transition-all hover:-translate-y-1 block">
               <div className="flex items-center mb-6">
                 <div className="w-14 h-14 bg-orange-50 rounded-full flex items-center justify-center text-orange-500 mr-4 border border-orange-100 shadow-inner">
                   <Bitcoin className="w-7 h-7" />
@@ -79,15 +79,20 @@ export default function CryptoPage() {
                 </div>
               </div>
               
-              <div className="space-y-2 text-sm text-slate-600 bg-orange-50/30 p-4 rounded-xl border border-orange-100/50">
+              <div className="space-y-2 text-sm text-slate-600 bg-orange-50/30 p-4 rounded-xl border border-orange-100/50 mb-4">
                  <p className="text-xs text-orange-600 font-bold uppercase tracking-wider mb-1">Notes</p>
                  {asset.notes ? (
-                   <p className="italic text-slate-700 leading-relaxed">{asset.notes}</p>
+                   <p className="italic text-slate-700 leading-relaxed line-clamp-2">{asset.notes}</p>
                  ) : (
                    <p className="text-slate-400 italic">No notes added</p>
                  )}
               </div>
-            </div>
+
+              <div className="flex items-center text-orange-600 text-sm font-medium bg-orange-50 px-4 py-2 rounded-lg w-fit">
+                <PieChart size={16} className="mr-2" />
+                Manage Allocations
+              </div>
+            </Link>
           ))}
         </div>
       )}

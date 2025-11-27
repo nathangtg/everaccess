@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Trash2, Eye } from 'lucide-react';
+import { Plus, Trash2, Eye, FileText, ExternalLink } from 'lucide-react';
 import api from '@/lib/api';
 import { Asset } from '@/types';
 
@@ -39,40 +39,42 @@ export default function AssetsPage() {
     }
   };
 
-  if (loading) return <div>Loading assets...</div>;
+  if (loading) return <div className="p-10 text-center text-slate-400 animate-pulse">Syncing secure assets...</div>;
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-8">
+    <div className="pb-10">
+      <div className="flex justify-between items-end mb-10">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Digital Assets</h1>
-          <p className="text-slate-500 mt-1">Manage your accounts and passwords securely</p>
+          <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Digital Assets</h1>
+          <p className="text-slate-500 mt-2 text-lg">Securely manage your online presence and accounts.</p>
         </div>
         <Link
           href="/dashboard/assets/new"
-          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl shadow-lg shadow-blue-200 font-semibold transition-all flex items-center gap-2 hover:scale-105 active:scale-95"
+          className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
         >
-          <Plus className="w-5 h-5" />
+          <Plus size={18} className="mr-2" />
           Add Asset
         </Link>
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl mb-6 text-sm font-medium">
+        <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl mb-6 text-sm font-medium animate-in fade-in slide-in-from-top-2">
           {error}
         </div>
       )}
 
       {assets.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-2xl shadow-sm border border-slate-100">
-          <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 mx-auto mb-4">
-            <Plus className="w-8 h-8" />
+        <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-slate-100">
+          <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 mx-auto mb-6 animate-bounce">
+            <Plus className="w-10 h-10" />
           </div>
-          <h3 className="text-lg font-semibold text-slate-900 mb-1">No assets found</h3>
-          <p className="text-slate-500 mb-6">Start by adding your first digital asset.</p>
+          <h3 className="text-2xl font-bold text-slate-900 mb-2">Your vault is empty</h3>
+          <p className="text-slate-500 mb-8 max-w-md mx-auto text-lg">
+            Start securing your legacy by adding your first digital asset (social media, bank account, or document).
+          </p>
           <Link
             href="/dashboard/assets/new"
-            className="text-blue-600 font-semibold hover:text-blue-700 hover:underline"
+            className="inline-flex px-6 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-lg"
           >
             Add your first asset
           </Link>
@@ -80,46 +82,54 @@ export default function AssetsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {assets.map((asset) => (
-            <div key={asset.asset_id} className="group bg-white rounded-2xl shadow-sm hover:shadow-md border border-slate-100 p-6 transition-all hover:-translate-y-1">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <span className="inline-block px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full bg-blue-50 text-blue-600 mb-3">
+            <div key={asset.asset_id} className="group bg-white rounded-3xl shadow-sm hover:shadow-xl border border-slate-100 p-6 transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-50 to-transparent rounded-bl-3xl -mr-2 -mt-2 transition-transform group-hover:scale-110"></div>
+              
+              <div className="relative z-10">
+                <div className="flex justify-between items-start mb-6">
+                  <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center shadow-sm border border-blue-100 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+                    <FileText size={24} />
+                  </div>
+                  <span className="inline-flex items-center px-2.5 py-1 text-xs font-bold uppercase tracking-wider rounded-lg bg-slate-100 text-slate-600 border border-slate-200">
                     {asset.asset_type.replace('_', ' ')}
                   </span>
-                  <h3 className="text-xl font-bold text-slate-900 mb-1">{asset.asset_name}</h3>
-                  {asset.platform_name && <p className="text-slate-500 text-sm font-medium">{asset.platform_name}</p>}
                 </div>
-              </div>
-              
-              <div className="space-y-2 text-sm text-slate-600 mb-6 bg-slate-50/50 p-3 rounded-lg border border-slate-100/50">
-                {asset.username && (
-                  <div className="flex items-center justify-between">
-                     <span className="text-slate-400 text-xs font-semibold uppercase">Username</span>
-                     <span className="font-mono text-slate-700">{asset.username}</span>
+                
+                <h3 className="text-xl font-bold text-slate-900 mb-1 group-hover:text-blue-600 transition-colors line-clamp-1">{asset.asset_name}</h3>
+                <p className="text-slate-500 text-sm font-medium mb-6 h-5">{asset.platform_name}</p>
+                
+                <div className="space-y-2 text-sm text-slate-600 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                  {asset.username ? (
+                    <div className="flex items-center justify-between">
+                       <span className="text-slate-400 text-xs font-bold uppercase">Username</span>
+                       <span className="font-mono text-slate-700 font-medium truncate max-w-[120px]" title={asset.username}>{asset.username}</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between">
+                       <span className="text-slate-400 text-xs font-bold uppercase">ID</span>
+                       <span className="font-mono text-slate-400 italic">Not set</span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-200/50">
+                     <span className="text-slate-400 text-xs font-bold uppercase">Category</span>
+                     <span className="text-slate-700 font-medium">{asset.category || 'General'}</span>
                   </div>
-                )}
-                {asset.category && (
-                  <div className="flex items-center justify-between">
-                     <span className="text-slate-400 text-xs font-semibold uppercase">Category</span>
-                     <span>{asset.category}</span>
-                  </div>
-                )}
-              </div>
+                </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-50">
-                 <button 
-                   className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                   title="View Details"
-                >
-                  <Eye className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => handleDelete(asset.asset_id)}
-                  className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  title="Delete"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                <div className="flex justify-between items-center pt-2">
+                   <button 
+                     className="text-sm font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 group/btn"
+                  >
+                    View Details <ExternalLink size={14} className="transition-transform group-hover/btn:translate-x-1" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(asset.asset_id)}
+                    className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                    title="Delete"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
               </div>
             </div>
           ))}

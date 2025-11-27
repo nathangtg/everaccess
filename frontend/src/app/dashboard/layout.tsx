@@ -12,7 +12,8 @@ import {
   Menu, 
   X, 
   ShieldCheck,
-  ChevronRight
+  ChevronRight,
+  Mail
 } from 'lucide-react';
 import { removeToken, getToken } from '@/lib/api';
 
@@ -59,6 +60,7 @@ export default function DashboardLayout({
     { name: 'Digital Assets', href: '/dashboard/assets', icon: Key },
     { name: 'Beneficiaries', href: '/dashboard/beneficiaries', icon: Users },
     { name: 'Crypto Vault', href: '/dashboard/crypto', icon: Bitcoin },
+    { name: 'Time Capsule', href: '/dashboard/messages', icon: Mail },
   ];
 
   return (

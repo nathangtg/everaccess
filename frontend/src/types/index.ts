@@ -97,3 +97,22 @@ export interface VerificationDocument {
   document_type: string;
   uploaded_at?: string;
 }
+
+export interface UserMessage {
+  message_id: string;
+  user_id: string;
+  beneficiary_id?: string;
+  message_title: string;
+  message_content: string;
+  delivery_condition: 'upon_death' | 'after_verification' | 'scheduled_date';
+  created_at: string;
+  delivered: boolean;
+  delivered_at?: string;
+}
+
+export interface UserMessageCreate {
+  beneficiary_id?: string;
+  message_title: string;
+  message_content: string;
+  delivery_condition: 'upon_death' | 'after_verification' | 'scheduled_date';
+}

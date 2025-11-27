@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Trash2, User } from 'lucide-react';
+import { Plus, Trash2, User, Heart, Phone, Mail } from 'lucide-react';
 import api from '@/lib/api';
 import { Beneficiary } from '@/types';
 
@@ -39,85 +39,105 @@ export default function BeneficiariesPage() {
     }
   };
 
-  if (loading) return <div>Loading beneficiaries...</div>;
+  if (loading) return <div className="p-10 text-center text-slate-400 animate-pulse">Syncing beneficiaries...</div>;
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-8">
+    <div className="pb-10">
+      <div className="flex justify-between items-end mb-10">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Beneficiaries</h1>
-          <p className="text-slate-500 mt-1">Who will inherit your digital legacy?</p>
+          <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Beneficiaries</h1>
+          <p className="text-slate-500 mt-2 text-lg">Who will inherit your digital legacy?</p>
         </div>
         <Link
           href="/dashboard/beneficiaries/new"
-          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl shadow-lg shadow-blue-200 font-semibold transition-all flex items-center gap-2 hover:scale-105 active:scale-95"
+          className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
         >
-          <Plus className="w-5 h-5" />
+          <Plus size={18} className="mr-2" />
           Add Beneficiary
         </Link>
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl mb-6 text-sm font-medium">
+        <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-xl mb-6 text-sm font-medium animate-in fade-in slide-in-from-top-2">
           {error}
         </div>
       )}
 
       {beneficiaries.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-2xl shadow-sm border border-slate-100">
-          <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 mx-auto mb-4">
-            <Plus className="w-8 h-8" />
+        <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-slate-100">
+          <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 mx-auto mb-6 animate-bounce">
+            <Plus className="w-10 h-10" />
           </div>
-          <p className="text-slate-500 mb-4">You haven&apos;t added any beneficiaries yet.</p>
+          <h3 className="text-2xl font-bold text-slate-900 mb-2">No beneficiaries yet</h3>
+          <p className="text-slate-500 mb-8 max-w-md mx-auto text-lg">
+            You need to designate at least one person or charity to receive your assets.
+          </p>
           <Link
             href="/dashboard/beneficiaries/new"
-            className="text-blue-600 font-semibold hover:text-blue-700 hover:underline"
+            className="inline-flex px-6 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-lg"
           >
             Add your first beneficiary
           </Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {beneficiaries.map((person) => (
-            <div key={person.beneficiary_id} className="group bg-white rounded-2xl shadow-sm hover:shadow-md border border-slate-100 p-6 flex flex-col transition-all hover:-translate-y-1">
-              <div className="flex items-center mb-6">
-                <div className="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 mr-4 shadow-sm border border-blue-100">
-                  <User className="w-7 h-7" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-slate-900">
-                    {person.first_name} {person.last_name}
-                  </h3>
-                  <span className="inline-block px-2 py-0.5 text-[10px] font-bold text-slate-500 bg-slate-100 rounded-full uppercase tracking-wide mt-1">
-                    {person.relationship_type}
-                  </span>
-                </div>
-              </div>
+          {beneficiaries.map((person) => {
+            const isCharity = person.relationship_type === 'Charity';
+            
+            return (
+              <div key={person.beneficiary_id} className="group bg-white rounded-3xl shadow-sm hover:shadow-xl border border-slate-100 p-6 flex flex-col transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
+                {/* Decorative Background Blob */}
+                <div className={`absolute top-0 right-0 w-32 h-32 rounded-bl-full -mr-8 -mt-8 opacity-50 transition-transform group-hover:scale-110 ${isCharity ? 'bg-red-50' : 'bg-blue-50'}`}></div>
 
-              <div className="space-y-3 text-sm text-slate-600 mb-6 flex-1">
-                <div className="flex items-center justify-between border-b border-slate-50 pb-2">
-                   <span className="text-slate-400 font-medium">Email</span>
-                   <span className="font-medium text-slate-800">{person.email}</span>
-                </div>
-                {person.phone_number && (
-                  <div className="flex items-center justify-between border-b border-slate-50 pb-2">
-                     <span className="text-slate-400 font-medium">Phone</span>
-                     <span className="font-medium text-slate-800">{person.phone_number}</span>
+                <div className="flex items-center mb-6 relative z-10">
+                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-sm border transition-colors duration-300 mr-4 
+                    ${isCharity 
+                      ? 'bg-red-50 text-red-500 border-red-100 group-hover:bg-red-500 group-hover:text-white' 
+                      : 'bg-blue-50 text-blue-600 border-blue-100 group-hover:bg-blue-600 group-hover:text-white'
+                    }`}>
+                    {isCharity ? <Heart size={28} fill={isCharity ? "currentColor" : "none"} /> : <User size={28} />}
                   </div>
-                )}
-              </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-900 leading-tight">
+                      {person.first_name} {person.last_name}
+                    </h3>
+                    <span className={`inline-block px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded-full mt-1.5
+                      ${isCharity ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}
+                    `}>
+                      {person.relationship_type}
+                    </span>
+                  </div>
+                </div>
 
-              <div className="flex justify-end pt-4 border-t border-slate-50">
-                <button
-                  onClick={() => handleDelete(person.beneficiary_id)}
-                  className="text-slate-400 hover:text-red-600 flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-lg hover:bg-red-50 transition-colors"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Remove
-                </button>
+                <div className="space-y-3 text-sm text-slate-600 mb-6 flex-1 relative z-10">
+                  <div className="flex items-center p-3 bg-slate-50 rounded-xl border border-slate-100 group-hover:border-slate-200 transition-colors">
+                     <div className="p-1.5 bg-white rounded-lg text-slate-400 mr-3 shadow-sm">
+                       <Mail size={14} />
+                     </div>
+                     <span className="font-medium text-slate-700 truncate">{person.email}</span>
+                  </div>
+                  {person.phone_number && (
+                    <div className="flex items-center p-3 bg-slate-50 rounded-xl border border-slate-100 group-hover:border-slate-200 transition-colors">
+                       <div className="p-1.5 bg-white rounded-lg text-slate-400 mr-3 shadow-sm">
+                         <Phone size={14} />
+                       </div>
+                       <span className="font-medium text-slate-700">{person.phone_number}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-end pt-4 border-t border-slate-50 relative z-10">
+                  <button
+                    onClick={() => handleDelete(person.beneficiary_id)}
+                    className="text-slate-400 hover:text-red-600 flex items-center gap-2 text-xs font-bold uppercase px-3 py-2 rounded-lg hover:bg-red-50 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Remove
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
