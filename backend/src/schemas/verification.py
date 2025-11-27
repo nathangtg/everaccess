@@ -20,7 +20,7 @@ class VerificationRequest(VerificationRequestBase):
     status: VerificationStatusEnum
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class VerificationDocumentBase(BaseModel):
     document_type: str
@@ -34,4 +34,4 @@ class VerificationDocument(VerificationDocumentBase):
     request_id: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True

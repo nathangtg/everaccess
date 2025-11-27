@@ -5,11 +5,11 @@ import uuid
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
+    first_name: str
+    last_name: str
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    username: str
     password: str
 
 class UserOut(BaseModel):
@@ -19,7 +19,7 @@ class UserOut(BaseModel):
     last_name: Optional[str] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class Token(BaseModel):
     access_token: str

@@ -1,9 +1,50 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, ArrowUpRight, Wallet, Key, Users, ShieldCheck } from 'lucide-react';
+import { Plus, ArrowUpRight, Wallet, Key, Users, ShieldCheck, Loader2 } from 'lucide-react';
+import api from '@/lib/api';
+import { Asset, Beneficiary } from '@/types';
 
 export default function Dashboard() {
+  const [assetCount, setAssetCount] = useState(0);
+  const [beneficiaryCount, setBeneficiaryCount] = useState(0);
+  const [cryptoCount, setCryptoCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [assetsRes, beneficiariesRes] = await Promise.all([
+          api.get<Asset[]>('/assets/?skip=0&limit=100'),
+          api.get<Beneficiary[]>('/beneficiaries/?skip=0&limit=100'),
+        ]);
+
+        const assets = assetsRes.data;
+        setAssetCount(assets.length);
+        setCryptoCount(assets.filter(a => a.asset_type === 'crypto_wallet').length);
+        
+        const beneficiaries = beneficiariesRes.data;
+        setBeneficiaryCount(beneficiaries.length);
+
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex h-[50vh] w-full items-center justify-center">
+        <Loader2 className="animate-spin text-blue-600 w-10 h-10" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       {/* Welcome Section */}
@@ -26,9 +67,9 @@ export default function Dashboard() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
-          { label: "Total Assets", value: "12", icon: Key, color: "text-blue-600", bg: "bg-blue-50" },
-          { label: "Beneficiaries", value: "3", icon: Users, color: "text-purple-600", bg: "bg-purple-50" },
-          { label: "Crypto Vaults", value: "2", icon: Wallet, color: "text-amber-600", bg: "bg-amber-50" },
+          { label: "Total Assets", value: assetCount, icon: Key, color: "text-blue-600", bg: "bg-blue-50" },
+          { label: "Beneficiaries", value: beneficiaryCount, icon: Users, color: "text-purple-600", bg: "bg-purple-50" },
+          { label: "Crypto Vaults", value: cryptoCount, icon: Wallet, color: "text-amber-600", bg: "bg-amber-50" },
         ].map((stat, i) => (
           <div key={i} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
             <div className="flex justify-between items-start mb-4">
@@ -36,7 +77,7 @@ export default function Dashboard() {
                 <stat.icon size={24} />
               </div>
               <span className="flex items-center text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                +2 new <ArrowUpRight size={12} className="ml-1" />
+                Live <ArrowUpRight size={12} className="ml-1" />
               </span>
             </div>
             <div className="text-3xl font-bold text-slate-900 mb-1">{stat.value}</div>

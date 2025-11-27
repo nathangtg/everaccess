@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session
 from typing import List
 from ..database import connection
@@ -44,13 +44,13 @@ def read_beneficiary(
         raise HTTPException(status_code=404, detail="Beneficiary not found")
     return db_beneficiary
 
-@router.delete("/{beneficiary_id}", response_model=beneficiary_schema.Beneficiary)
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_beneficiary(
-    beneficiary_id: str,
+    id: str,
     db: Session = Depends(connection.get_db),
     current_user: user_model.User = Depends(get_current_user),
 ):
-    db_beneficiary = beneficiary_service.delete_beneficiary(db, beneficiary_id=beneficiary_id, user_id=current_user.user_id)
+    db_beneficiary = beneficiary_service.delete_beneficiary(db, beneficiary_id=id, user_id=current_user.user_id)
     if db_beneficiary is None:
         raise HTTPException(status_code=404, detail="Beneficiary not found")
-    return db_beneficiary
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

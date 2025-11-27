@@ -5,6 +5,13 @@ export interface User {
   last_name?: string;
 }
 
+export interface UserAdminView extends User {
+  is_active: boolean;
+  is_superuser: boolean;
+  created_at: string;
+  last_login?: string;
+}
+
 export interface AuthResponse {
   access_token: string;
   token_type: string;
@@ -13,8 +20,8 @@ export interface AuthResponse {
 export interface Asset {
   asset_id: string;
   asset_type: 'login_credential' | 'crypto_wallet' | 'document' | 'social_media' | 'financial' | 'other';
-  asset_name: string;
   platform_name?: string;
+  asset_name: string;
   username?: string;
   password?: string;
   recovery_email?: string;
@@ -25,8 +32,8 @@ export interface Asset {
 
 export interface AssetCreate {
   asset_type: 'login_credential' | 'crypto_wallet' | 'document' | 'social_media' | 'financial' | 'other';
-  asset_name: string;
   platform_name?: string;
+  asset_name: string;
   username?: string;
   password?: string;
   recovery_email?: string;
@@ -67,4 +74,26 @@ export interface CryptoAssetCreate {
   seed_phrase: string;
   balance_usd: number;
   balance_crypto: number;
+}
+
+export interface CryptoAllocation {
+  allocation_id?: string; // Assuming ID might exist
+  beneficiary_id: string;
+  percentage: number;
+}
+
+export interface VerificationRequest {
+  request_id?: string; // Assuming ID exists
+  requester_email: string;
+  user_id: string;
+  status?: string;
+  created_at?: string;
+}
+
+export interface VerificationDocument {
+  document_id?: string;
+  request_id: string;
+  filename: string;
+  document_type: string;
+  uploaded_at?: string;
 }

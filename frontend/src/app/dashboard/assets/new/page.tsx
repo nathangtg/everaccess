@@ -42,7 +42,7 @@ export default function NewAssetPage() {
     setError('');
 
     try {
-      await api.post('/assets/', payload);
+      await api.post('/assets/', formData);
       router.push('/dashboard/assets');
     } catch (err) {
       console.error('Error creating asset:', err);

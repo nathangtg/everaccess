@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Response
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from ..database import connection
@@ -14,7 +14,7 @@ router = APIRouter(
     tags=["Assets"],
 )
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 def get_current_user(db: Session = Depends(connection.get_db), token: str = Depends(oauth2_scheme)):
     email = decode_access_token(token)
@@ -62,7 +62,7 @@ def read_asset(
         raise HTTPException(status_code=404, detail="Asset not found")
     return db_asset
 
-@router.delete("/{asset_id}", response_model=asset_schema.Asset)
+@router.delete("/{asset_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_asset(
     asset_id: str,
     db: Session = Depends(connection.get_db),
@@ -71,7 +71,7 @@ def delete_asset(
     db_asset = asset_service.delete_asset(db, asset_id=asset_id, user_id=current_user.user_id)
     if db_asset is None:
         raise HTTPException(status_code=404, detail="Asset not found")
-    return db_asset
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 @router.post("/uploadfile/")
 async def create_upload_file(file: UploadFile):

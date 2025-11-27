@@ -9,16 +9,25 @@ router = APIRouter(
     tags=["Authentication"],
 )
 
-@router.post("/register", response_model=user_schema.UserOut)
+@router.post("/register", response_model=user_schema.Token)
 def register_user(user: user_schema.UserCreate, db: Session = Depends(connection.get_db)):
     db_user = user_service.get_user_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
-    return user_service.create_user(db=db, user=user)
+    
+    # Create user
+    created_user = user_service.create_user(db=db, user=user)
+    
+    # Create access token for the new user
+    access_token = security.create_access_token(
+        data={"sub": created_user.email}
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
 
 @router.post("/login", response_model=user_schema.Token)
 def login_for_access_token(form_data: user_schema.UserLogin, db: Session = Depends(connection.get_db)):
-    user = user_service.get_user_by_email(db, email=form_data.email)
+    # Frontend sends username as email
+    user = user_service.get_user_by_email(db, email=form_data.username)
     if not user or not security.verify_password(form_data.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

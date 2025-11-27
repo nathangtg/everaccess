@@ -8,6 +8,7 @@ def get_user_by_email(db: Session, email: str):
 
 def create_user(db: Session, user: user_schema.UserCreate):
     hashed_password = get_password_hash(user.password)
+    
     db_user = user_model.User(
         email=user.email,
         password_hash=hashed_password,

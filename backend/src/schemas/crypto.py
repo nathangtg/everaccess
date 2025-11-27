@@ -18,7 +18,7 @@ class CryptoAsset(CryptoAssetBase):
     crypto_asset_id: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class CryptoAllocationBase(BaseModel):
     beneficiary_id: str
@@ -36,4 +36,4 @@ class CryptoAllocation(CryptoAllocationBase):
     mock_transaction_id: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True

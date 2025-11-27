@@ -29,7 +29,7 @@ export default function NewBeneficiaryPage() {
     setError('');
 
     try {
-      await api.post('/beneficiaries/', payload);
+      await api.post('/beneficiaries/', formData);
       router.push('/dashboard/beneficiaries');
     } catch (err) {
       console.error('Error creating beneficiary:', err);

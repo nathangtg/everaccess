@@ -14,7 +14,7 @@ class AdminUserOut(BaseModel):
     status: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class UserAdminView(UserOut):
     # This extends UserOut with fields visible only to admin
