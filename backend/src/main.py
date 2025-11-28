@@ -6,7 +6,7 @@ from sqlalchemy.exc import OperationalError
 
 from .database.base import Base
 from .database.connection import engine
-from .routes import auth, assets, beneficiaries, crypto, verifications, beneficiary_portal, messages
+from .routes import auth, assets, beneficiaries, crypto, verifications, beneficiary_portal, messages, users
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -23,6 +23,7 @@ app.add_middleware(
 )
 
 app.include_router(auth.router, prefix="/auth")
+app.include_router(users.router)
 app.include_router(assets.router)
 app.include_router(beneficiaries.router)
 app.include_router(crypto.router)

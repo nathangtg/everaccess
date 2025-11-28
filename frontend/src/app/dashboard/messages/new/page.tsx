@@ -117,13 +117,13 @@ export default function NewMessagePage() {
               >
                 <option value="upon_death">Upon Verified Death</option>
                 <option value="after_verification">After Verification Approval</option>
-                <option value="scheduled_date">On a Scheduled Date (Coming Soon)</option>
+                <option value="scheduled_date">On a Scheduled Date</option>
               </select>
             </div>
           </div>
 
           <div className="pt-4 border-t border-slate-100 flex items-center justify-end">
-             <button
+            <button
               type="submit"
               disabled={isLoading}
               className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"

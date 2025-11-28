@@ -44,6 +44,18 @@ def read_beneficiary(
         raise HTTPException(status_code=404, detail="Beneficiary not found")
     return db_beneficiary
 
+@router.put("/{beneficiary_id}", response_model=beneficiary_schema.Beneficiary)
+def update_beneficiary(
+    beneficiary_id: str,
+    beneficiary: beneficiary_schema.BeneficiaryUpdate,
+    db: Session = Depends(connection.get_db),
+    current_user: user_model.User = Depends(get_current_user),
+):
+    db_beneficiary = beneficiary_service.update_beneficiary(db, beneficiary_id=beneficiary_id, beneficiary_update=beneficiary, user_id=current_user.user_id)
+    if db_beneficiary is None:
+        raise HTTPException(status_code=404, detail="Beneficiary not found")
+    return db_beneficiary
+
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_beneficiary(
     id: str,

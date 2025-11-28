@@ -18,6 +18,19 @@ def get_beneficiaries(db: Session, user_id: str, skip: int = 0, limit: int = 100
 def get_beneficiary(db: Session, beneficiary_id: str, user_id: str):
     return db.query(beneficiary_model.Beneficiary).filter(beneficiary_model.Beneficiary.beneficiary_id == beneficiary_id, beneficiary_model.Beneficiary.user_id == user_id).first()
 
+def update_beneficiary(db: Session, beneficiary_id: str, beneficiary_update: beneficiary_schema.BeneficiaryUpdate, user_id: str):
+    db_beneficiary = get_beneficiary(db, beneficiary_id, user_id)
+    if not db_beneficiary:
+        return None
+    
+    update_data = beneficiary_update.dict(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(db_beneficiary, key, value)
+
+    db.commit()
+    db.refresh(db_beneficiary)
+    return db_beneficiary
+
 def delete_beneficiary(db: Session, beneficiary_id: str, user_id: str):
     db_beneficiary = db.query(beneficiary_model.Beneficiary).filter(beneficiary_model.Beneficiary.beneficiary_id == beneficiary_id, beneficiary_model.Beneficiary.user_id == user_id).first()
     if db_beneficiary:

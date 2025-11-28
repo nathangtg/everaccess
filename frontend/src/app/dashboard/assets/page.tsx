@@ -110,31 +110,33 @@ export default function AssetsPage() {
                        <span className="font-mono text-slate-400 italic">Not set</span>
                     </div>
                   )}
-                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-200/50">
-                     <span className="text-slate-400 text-xs font-bold uppercase">Category</span>
-                     <span className="text-slate-700 font-medium">{asset.category || 'General'}</span>
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-center pt-2">
-                   <button 
-                     className="text-sm font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 group/btn"
-                  >
-                    View Details <ExternalLink size={14} className="transition-transform group-hover/btn:translate-x-1" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(asset.asset_id)}
-                    className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                    title="Delete"
-                  >
-                    <Trash2 size={18} />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+                                     <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-200/50">
+                                       <span className="text-slate-400 text-xs font-bold uppercase">Category</span>
+                                       <span className="text-slate-700 font-medium">{asset.category || 'General'}</span>
+                                    </div>
+                                  </div>
+                  
+                                  <div className="flex justify-between items-center pt-2">
+                                     <Link 
+                                       href={`/dashboard/assets/${asset.asset_id}`}
+                                       className="text-sm font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 group/btn"
+                                    >
+                                      View Details <ExternalLink size={14} className="transition-transform group-hover/btn:translate-x-1" />
+                                    </Link>
+                                    <button
+                                      onClick={() => handleDelete(asset.asset_id)}
+                                      className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                      title="Delete"
+                                    >
+                                      <Trash2 size={18} />
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+                  
