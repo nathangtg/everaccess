@@ -43,3 +43,7 @@ class Asset(Base):
     access_rules = relationship("AccessRule", back_populates="asset")
     access_logs = relationship("AccessLog", back_populates="asset")
     crypto_asset = relationship("CryptoAsset", back_populates="asset", uselist=False, cascade="all, delete-orphan")
+
+    @property
+    def beneficiaries(self):
+        return [rule.beneficiary for rule in self.access_rules]

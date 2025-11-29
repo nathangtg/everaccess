@@ -4,20 +4,22 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Plus, ArrowUpRight, Wallet, Key, Users, ShieldCheck, Loader2, Activity, FileText } from 'lucide-react';
 import api from '@/lib/api';
-import { Asset, Beneficiary } from '@/types';
+import { Asset, Beneficiary, User } from '@/types';
 
 export default function Dashboard() {
   const [assetCount, setAssetCount] = useState(0);
   const [beneficiaryCount, setBeneficiaryCount] = useState(0);
   const [cryptoCount, setCryptoCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [userName, setUserName] = useState('User');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [assetsRes, beneficiariesRes] = await Promise.all([
+        const [assetsRes, beneficiariesRes, userRes] = await Promise.all([
           api.get<Asset[]>('/assets/?skip=0&limit=100'),
           api.get<Beneficiary[]>('/beneficiaries/?skip=0&limit=100'),
+          api.get<User>('/users/me'),
         ]);
 
         const assets = assetsRes.data;
@@ -26,6 +28,10 @@ export default function Dashboard() {
         
         const beneficiaries = beneficiariesRes.data;
         setBeneficiaryCount(beneficiaries.length);
+
+        if (userRes.data.first_name) {
+          setUserName(userRes.data.first_name);
+        }
 
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
@@ -57,7 +63,7 @@ export default function Dashboard() {
              <Activity size={12} className="mr-1" /> System Operational
           </div>
           <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">
-            Welcome back, <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">User</span>
+            Welcome back, <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">{userName}</span>
           </h1>
           <p className="text-slate-500 mt-2 text-lg max-w-xl">
             Your digital legacy is secure. You have <span className="font-bold text-slate-900">{assetCount} assets</span> protected across your vault.

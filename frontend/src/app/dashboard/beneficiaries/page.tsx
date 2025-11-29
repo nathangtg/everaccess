@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Trash2, User, Heart, Phone, Mail } from 'lucide-react';
+import { Plus, Trash2, User, Heart, Phone, Mail, Edit2 } from 'lucide-react';
 import api from '@/lib/api';
 import { Beneficiary } from '@/types';
 
@@ -126,7 +126,14 @@ export default function BeneficiariesPage() {
                   )}
                 </div>
 
-                <div className="flex justify-end pt-4 border-t border-slate-50 relative z-10">
+                <div className="flex justify-between items-center pt-4 border-t border-slate-50 relative z-10">
+                  <Link
+                    href={`/dashboard/beneficiaries/${person.beneficiary_id}`}
+                    className="text-slate-500 hover:text-blue-600 flex items-center gap-2 text-xs font-bold uppercase px-3 py-2 rounded-lg hover:bg-blue-50 transition-colors"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                    Edit
+                  </Link>
                   <button
                     onClick={() => handleDelete(person.beneficiary_id)}
                     className="text-slate-400 hover:text-red-600 flex items-center gap-2 text-xs font-bold uppercase px-3 py-2 rounded-lg hover:bg-red-50 transition-colors"

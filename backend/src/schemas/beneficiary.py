@@ -11,6 +11,13 @@ class BeneficiaryBase(BaseModel):
 class BeneficiaryCreate(BeneficiaryBase):
     pass
 
+class BeneficiaryUpdate(BaseModel):
+    email: Optional[EmailStr] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    phone_number: Optional[str] = None
+    relationship_type: Optional[str] = None
+
 class Beneficiary(BeneficiaryBase):
     beneficiary_id: str
 

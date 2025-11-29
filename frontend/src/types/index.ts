@@ -28,6 +28,7 @@ export interface Asset {
   recovery_phone?: string;
   notes?: string;
   category?: string;
+  beneficiaries?: Beneficiary[];
 }
 
 export interface AssetCreate {
@@ -40,6 +41,7 @@ export interface AssetCreate {
   recovery_phone?: string;
   notes?: string;
   category?: string;
+  beneficiary_ids?: string[];
 }
 
 export interface Beneficiary {

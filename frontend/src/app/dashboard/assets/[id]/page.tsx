@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import api from '@/lib/api';
 import { AssetCreate, Beneficiary } from '@/types';
 import { ArrowLeft } from 'lucide-react';
@@ -16,12 +16,15 @@ const ASSET_TYPES = [
   { value: 'other', label: 'Other' },
 ];
 
-export default function NewAssetPage() {
+export default function EditAssetPage() {
   const router = useRouter();
+  const params = useParams();
+  const assetId = params.id;
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
-  
+
   const [formData, setFormData] = useState<AssetCreate>({
     asset_type: 'login_credential',
     asset_name: '',
@@ -36,16 +39,38 @@ export default function NewAssetPage() {
   });
 
   useEffect(() => {
-    const fetchBeneficiaries = async () => {
+    const fetchData = async () => {
       try {
-        const res = await api.get('/beneficiaries/');
-        setBeneficiaries(res.data);
+        const [assetRes, beneficiariesRes] = await Promise.all([
+          api.get(`/assets/${assetId}`),
+          api.get('/beneficiaries/')
+        ]);
+
+        setBeneficiaries(beneficiariesRes.data);
+
+        const asset = assetRes.data;
+        setFormData({
+          asset_type: asset.asset_type,
+          asset_name: asset.asset_name,
+          platform_name: asset.platform_name || '',
+          username: asset.username || '',
+          password: asset.password || '',
+          recovery_email: asset.recovery_email || '',
+          recovery_phone: asset.recovery_phone || '',
+          notes: asset.notes || '',
+          category: asset.category || '',
+          beneficiary_ids: asset.beneficiaries ? asset.beneficiaries.map((b: any) => b.beneficiary_id) : [],
+        });
       } catch (err) {
-        console.error('Failed to fetch beneficiaries', err);
+        console.error('Failed to fetch data', err);
+        setError('Failed to load asset data.');
       }
     };
-    fetchBeneficiaries();
-  }, []);
+
+    if (assetId) {
+      fetchData();
+    }
+  }, [assetId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -69,11 +94,11 @@ export default function NewAssetPage() {
     setError('');
 
     try {
-      await api.post('/assets/', formData);
+      await api.put(`/assets/${assetId}`, formData);
       router.push('/dashboard/assets');
     } catch (err) {
-      console.error('Error creating asset:', err);
-      setError('Failed to create asset. Please try again.');
+      console.error('Error updating asset:', err);
+      setError('Failed to update asset. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -89,8 +114,8 @@ export default function NewAssetPage() {
           <ArrowLeft size={18} className="mr-1" />
           Back to Assets
         </Link>
-        <h1 className="text-3xl font-bold text-slate-900">Add New Asset</h1>
-        <p className="text-slate-500 mt-1">Securely store details about your digital property.</p>
+        <h1 className="text-3xl font-bold text-slate-900">Edit Asset</h1>
+        <p className="text-slate-500 mt-1">Update details about your digital property.</p>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
@@ -248,7 +273,7 @@ export default function NewAssetPage() {
             )}
           </div>
 
-          <div className="pt-4 flex items-center justify-end gap-4">
+          <div className="flex items-center justify-end gap-4 pt-4">
             <button
               type="button"
               onClick={() => router.back()}
@@ -261,7 +286,7 @@ export default function NewAssetPage() {
               disabled={loading}
               className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Saving...' : 'Save Asset'}
+              {loading ? 'Updating Asset...' : 'Update Asset'}
             </button>
           </div>
         </form>

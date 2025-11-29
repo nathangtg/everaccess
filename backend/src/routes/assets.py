@@ -41,6 +41,18 @@ def read_asset(
         raise HTTPException(status_code=404, detail="Asset not found")
     return db_asset
 
+@router.put("/{asset_id}", response_model=asset_schema.Asset)
+def update_asset(
+    asset_id: str,
+    asset: asset_schema.AssetUpdate,
+    db: Session = Depends(connection.get_db),
+    current_user: user_model.User = Depends(get_current_user),
+):
+    db_asset = asset_service.update_asset(db, asset_id=asset_id, asset_update=asset, user_id=current_user.user_id)
+    if db_asset is None:
+        raise HTTPException(status_code=404, detail="Asset not found")
+    return db_asset
+
 @router.delete("/{asset_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_asset(
     asset_id: str,
