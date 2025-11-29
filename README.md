@@ -48,7 +48,7 @@ The platform includes a verification system where beneficiaries can request acce
 
 1. **Clone the repository:**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/nathangtg/everaccess
    cd everaccess
    ```
 
