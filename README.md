@@ -54,7 +54,7 @@ The platform includes a verification system where beneficiaries can request acce
 
 2. **Start the application using Docker Compose:**
    ```bash
-   docker-compose up --build
+   docker compose up --build
    ```
 
    This command will build the images for the backend, frontend, and database, and start the services.
