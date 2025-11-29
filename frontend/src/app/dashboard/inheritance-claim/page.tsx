@@ -8,6 +8,7 @@ import api from '@/lib/api';
 export default function InheritanceClaimPage() {
   const router = useRouter();
   const [targetEmail, setTargetEmail] = useState('');
+  const [claimantEmail, setClaimantEmail] = useState(''); // New state for claimant email
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -21,7 +22,7 @@ export default function InheritanceClaimPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file || !targetEmail) return;
+    if (!file || !targetEmail || !claimantEmail) return; // Validate new field
 
     setLoading(true);
     setStatus('idle');
@@ -29,6 +30,7 @@ export default function InheritanceClaimPage() {
 
     const formData = new FormData();
     formData.append('target_user_email', targetEmail);
+    formData.append('claimant_email', claimantEmail); // Append claimant email
     formData.append('file', file);
 
     try {
@@ -40,11 +42,12 @@ export default function InheritanceClaimPage() {
       setStatus('success');
       setMessage('Your claim has been submitted securely. Our team will review the documentation and notify you shortly.');
       setTargetEmail('');
+      setClaimantEmail(''); // Clear new field
       setFile(null);
     } catch (err: any) {
       console.error('Error submitting claim:', err);
       setStatus('error');
-      setMessage(err.response?.data?.detail || 'Failed to submit claim. Please verify the email and try again.');
+      setMessage(err.response?.data?.detail || 'Failed to submit claim. Please verify the emails and try again.');
     } finally {
       setLoading(false);
     }
@@ -95,7 +98,22 @@ export default function InheritanceClaimPage() {
                 required
                 value={targetEmail}
                 onChange={(e) => setTargetEmail(e.target.value)}
-                placeholder="email@example.com"
+                placeholder="deceased@example.com"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+              />
+            </div>
+
+            {/* New field for Claimant's Email */}
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">
+                Your Email (as Beneficiary)
+              </label>
+              <input
+                type="email"
+                required
+                value={claimantEmail}
+                onChange={(e) => setClaimantEmail(e.target.value)}
+                placeholder="your@example.com"
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
               />
             </div>

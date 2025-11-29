@@ -28,6 +28,8 @@ class Beneficiary(Base):
         default="active",
     )
     notification_sent = Column(Boolean, default=False)
+    access_token_hash = Column(String(255), nullable=True)
+    token_expires_at = Column(DateTime, nullable=True)
 
     user = relationship("User", back_populates="beneficiaries")
     access_rules = relationship("AccessRule", back_populates="beneficiary")

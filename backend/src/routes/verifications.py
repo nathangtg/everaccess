@@ -47,34 +47,33 @@ async def upload_verification_document(
 @router.post("/inheritance-claim", response_model=verification_schema.VerificationRequest)
 async def claim_inheritance(
     target_user_email: str = Form(...),
+    claimant_email: str = Form(...),
     file: UploadFile = File(...),
     db: Session = Depends(connection.get_db),
-    current_user: user_model.User = Depends(get_current_user), # Beneficiary must be logged in
 ):
     # 1. Find target user
     target_user = db.query(user_model.User).filter(user_model.User.email == target_user_email).first()
     if not target_user:
         raise HTTPException(status_code=404, detail="Target user not found")
 
-    # 2. Create Verification Request
-    # We assume the requester is the beneficiary
-    request_create = verification_schema.VerificationRequestCreate(
-        requester_email=current_user.email,
-        user_id=target_user.user_id,
-    )
-    
-    # Lookup beneficiary
+    # 2. Validate Claimant is a Beneficiary
     beneficiary = db.query(beneficiary_model.Beneficiary).filter(
         beneficiary_model.Beneficiary.user_id == target_user.user_id,
-        beneficiary_model.Beneficiary.email == current_user.email
+        beneficiary_model.Beneficiary.email == claimant_email
     ).first()
 
     if not beneficiary:
          raise HTTPException(status_code=403, detail="You are not listed as a beneficiary for this user.")
 
+    # 3. Create Verification Request
+    request_create = verification_schema.VerificationRequestCreate(
+        requester_email=claimant_email,
+        user_id=target_user.user_id,
+    )
+    
     new_request = verification_service.create_verification_request(db, request=request_create, beneficiary_id=beneficiary.beneficiary_id)
 
-    # 3. Add Death Certificate Document
+    # 4. Add Death Certificate Document
     document = verification_schema.VerificationDocumentCreate(
         document_type="death_certificate",
         file_name=file.filename,

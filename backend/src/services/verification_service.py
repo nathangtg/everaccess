@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
-from ..database.models import verification_request as verification_request_model, verification_document as verification_document_model, user as user_model, access_rule as access_rule_model
+from ..database.models import verification_request as verification_request_model, verification_document as verification_document_model, user as user_model, access_rule as access_rule_model, beneficiary as beneficiary_model
 from ..schemas import verification as verification_schema
+from ..services import beneficiary_service
 
 def create_verification_request(db: Session, request: verification_schema.VerificationRequestCreate, beneficiary_id: str):
     db_request = verification_request_model.VerificationRequest(
@@ -23,30 +24,39 @@ def trigger_inheritance_process(db: Session, user_id: str):
     """
     Triggered when a death certificate is verified.
     1. Set User account_status to 'deceased'.
-    2. Activate AccessRules with 'ON_DEATH' condition.
+    2. Generate secure access tokens for all beneficiaries.
+    3. Send notifications (emails) with the access link.
     """
     # 1. Update User Status
     user = db.query(user_model.User).filter(user_model.User.user_id == user_id).first()
     if user:
         user.account_status = "deceased"
         db.add(user)
-    
-    # 2. Activate Access Rules
-    # We are looking for rules where conditions contains {"trigger": "ON_DEATH"}
-    # Since conditions is a JSON column, exact matching or specialized operators depend on DB.
-    # For simplicity/portability, we'll fetch rules for the user and filter in python if needed, 
-    # or just assume we can inspect them.
-    # In a real system, we might update a 'status' field on the rule, but AccessRule doesn't have a status field visible in the snippet.
-    # However, the request asked to "access accordingly to their will". 
-    # We'll assume "active" rules are those where conditions are met.
-    # We will log this action or update a hypothetical status if it existed.
-    # Since AccessRule definition doesn't have 'is_active', we might just rely on the 'deceased' user status
-    # being the trigger for the Access Service to ALLOW access.
-    
-    # But to make it explicit, let's print/log.
-    print(f"Inheritance process triggered for User {user_id}")
-    
-    db.commit()
+        
+        print(f"Inheritance process triggered for User {user_id}")
+        
+        # 2. Generate Tokens for Beneficiaries
+        beneficiaries = db.query(beneficiary_model.Beneficiary).filter(
+            beneficiary_model.Beneficiary.user_id == user_id,
+            beneficiary_model.Beneficiary.status == "active"
+        ).all()
+        
+        for beneficiary in beneficiaries:
+            raw_token = beneficiary_service.generate_access_token(db, beneficiary.beneficiary_id)
+            
+            # 3. Mock Send Email
+            # In a real app, use an email service
+            access_link = f"http://localhost:3000/dashboard/beneficiary-access?token={raw_token}"
+            print(f"---------------------------------------------------")
+            print(f"EMAIL TO: {beneficiary.email}")
+            print(f"SUBJECT: Inheritance Access Granted")
+            print(f"BODY: Dear {beneficiary.first_name}, access has been granted. Click here: {access_link}")
+            print(f"---------------------------------------------------")
+            
+            beneficiary.notification_sent = True
+            db.add(beneficiary)
+            
+        db.commit()
 
 def approve_verification_request(db: Session, request_id: str, admin_id: str):
     db_request = get_verification_request(db, request_id)
