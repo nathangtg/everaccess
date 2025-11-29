@@ -1,10 +1,7 @@
 from sqlalchemy.orm import Session
-<<<<<<< HEAD
 from ..database.models import asset as asset_model, access_rule as access_rule_model
-=======
 from ..database.models import asset as asset_model
 from ..database.models.access_rule import AccessRule
->>>>>>> 2ce792fee795d14b620e80dc5278e3105227b619
 from ..schemas import asset as asset_schema
 
 def create_asset(db: Session, asset: asset_schema.AssetCreate, user_id: str):
