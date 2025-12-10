@@ -37,9 +37,19 @@ class AssetUpdate(BaseModel):
     category: Optional[str] = None
     beneficiary_ids: Optional[List[str]] = None
 
+class AssetFile(BaseModel):
+    file_id: str
+    file_name: str
+    file_type: Optional[str] = None
+    file_size: Optional[int] = None
+    
+    class Config:
+        from_attributes = True
+
 class Asset(AssetBase):
     asset_id: str
     beneficiaries: Optional[List[Beneficiary]] = []
+    asset_files: Optional[List[AssetFile]] = []
 
     class Config:
         from_attributes = True
