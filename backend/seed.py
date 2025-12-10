@@ -125,13 +125,13 @@ def seed_data():
             },
             {
                 "type": "crypto_wallet",
-                "platform": "Solana",
-                "name": "Solana Staking Wallet",
+                "platform": "Tether",
+                "name": "Tether Stablecoin Wallet",
                 "balance_usd": Decimal('45000.00'),
-                "balance_crypto": Decimal('2500.0'),
-                "wallet_type": "solana",
-                "wallet_address": "DE1bawNcRJB9rVm2DXjwaS8zZ9d7U4873zYV3aVQkZE4",
-                "notes": "Staking rewards wallet"
+                "balance_crypto": Decimal('45000.0'),
+                "wallet_type": "usdt",
+                "wallet_address": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNb",
+                "notes": "Stablecoin reserves"
             },
             # Financial Accounts
             {
