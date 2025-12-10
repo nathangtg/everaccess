@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import api from '@/lib/api';
 import { BeneficiaryCreate } from '@/types';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
 export default function EditBeneficiaryPage() {
@@ -15,6 +15,7 @@ export default function EditBeneficiaryPage() {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState('');
+  const [isRegistered, setIsRegistered] = useState(false);
   
   const [formData, setFormData] = useState<BeneficiaryCreate>({
     email: '',
@@ -29,6 +30,7 @@ export default function EditBeneficiaryPage() {
       try {
         const res = await api.get(`/beneficiaries/${beneficiaryId}`);
         const data = res.data;
+        setIsRegistered(data.is_registered);
         setFormData({
           email: data.email,
           first_name: data.first_name || '',
@@ -92,6 +94,18 @@ export default function EditBeneficiaryPage() {
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-6 text-sm font-medium">
             {error}
+          </div>
+        )}
+
+        {!isRegistered && (
+          <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-xl mb-6 text-sm flex items-start">
+            <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold">Not Registered</p>
+              <p className="mt-1 opacity-90">
+                This beneficiary does not have a registered account with this email address. They will still be listed as your beneficiary, but they may need to create an account to easily claim assets later.
+              </p>
+            </div>
           </div>
         )}
 
