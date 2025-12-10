@@ -24,3 +24,11 @@ class CryptoAsset(Base):
 
     asset = relationship("Asset", back_populates="crypto_asset")
     allocations = relationship("CryptoAllocation", back_populates="crypto_asset")
+
+    @property
+    def asset_name(self):
+        return self.asset.asset_name if self.asset else None
+
+    @property
+    def platform_name(self):
+        return self.asset.platform_name if self.asset else None
