@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import api from '@/lib/api';
-import { AssetCreate, Beneficiary } from '@/types';
-import { ArrowLeft } from 'lucide-react';
+import { AssetCreate, Beneficiary, AssetFile } from '@/types';
+import { ArrowLeft, Download, FileText } from 'lucide-react';
 import Link from 'next/link';
 
 const ASSET_TYPES = [
@@ -24,6 +24,7 @@ export default function EditAssetPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
+  const [files, setFiles] = useState<AssetFile[]>([]);
 
   const [formData, setFormData] = useState<AssetCreate>({
     asset_type: 'login_credential',
@@ -49,6 +50,7 @@ export default function EditAssetPage() {
         setBeneficiaries(beneficiariesRes.data);
 
         const asset = assetRes.data;
+        setFiles(asset.asset_files || []);
         setFormData({
           asset_type: asset.asset_type,
           asset_name: asset.asset_name,
@@ -101,6 +103,25 @@ export default function EditAssetPage() {
       setError('Failed to update asset. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDownload = async (fileId: string, fileName: string) => {
+    try {
+      const response = await api.get(`/assets/${assetId}/files/${fileId}`, {
+        responseType: 'blob',
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      console.error('Download failed', err);
+      alert('Failed to download file.');
     }
   };
 
@@ -180,6 +201,37 @@ export default function EditAssetPage() {
               />
             </div>
           </div>
+          
+          {files.length > 0 && (
+            <div className="border-t border-slate-100 pt-6 mt-6">
+              <h3 className="text-lg font-bold text-slate-900 mb-4">Attached Files</h3>
+              <div className="space-y-3">
+                {files.map((file) => (
+                  <div key={file.file_id} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-white rounded-lg border border-slate-200 text-blue-600">
+                        <FileText size={20} />
+                      </div>
+                      <div>
+                        <div className="font-medium text-slate-900">{file.file_name}</div>
+                        <div className="text-xs text-slate-500">
+                          {file.file_size ? `${(file.file_size / 1024).toFixed(2)} KB` : 'Unknown size'}
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleDownload(file.file_id, file.file_name)}
+                      className="p-2 text-slate-500 hover:text-blue-600 hover:bg-white rounded-lg transition-all"
+                      title="Download"
+                    >
+                      <Download size={20} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="border-t border-slate-100 pt-6 mt-6">
             <h3 className="text-lg font-bold text-slate-900 mb-4">Credentials (Optional)</h3>
