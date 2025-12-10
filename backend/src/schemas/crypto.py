@@ -59,10 +59,10 @@ class CryptoAllocationCreate(CryptoAllocationBase):
 class CryptoAllocation(CryptoAllocationBase):
     allocation_id: str
     crypto_asset_id: str
-    allocated_amount_usd: Decimal
-    allocated_amount_crypto: Decimal
-    disbursement_status: str
-    mock_transaction_id: str
+    allocated_amount_usd: Optional[Decimal] = None
+    allocated_amount_crypto: Optional[Decimal] = None
+    disbursement_status: Optional[str] = None
+    mock_transaction_id: Optional[str] = None
 
     class Config:
         from_attributes = True
