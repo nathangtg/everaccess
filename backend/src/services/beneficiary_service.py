@@ -3,16 +3,25 @@ import hashlib
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from ..database.models import beneficiary as beneficiary_model
+from ..database.models.user import User
 from ..schemas import beneficiary as beneficiary_schema
 
 def create_beneficiary(db: Session, beneficiary: beneficiary_schema.BeneficiaryCreate, user_id: str):
-    db_beneficiary = beneficiary_model.Beneficiary(**beneficiary.dict(), user_id=user_id)
+    # Check if the beneficiary email is already registered in the system
+    existing_user = db.query(User).filter(User.email == beneficiary.email).first()
+    is_registered = existing_user is not None
+
+    db_beneficiary = beneficiary_model.Beneficiary(
+        **beneficiary.dict(), 
+        user_id=user_id,
+        is_registered=is_registered
+    )
     db.add(db_beneficiary)
     db.commit()
     db.refresh(db_beneficiary)
     # Here you would typically send an email to the beneficiary.
     # For now, we'll just print to the console.
-    print(f"Beneficiary {db_beneficiary.email} added for user {user_id}")
+    print(f"Beneficiary {db_beneficiary.email} added for user {user_id}. Registered: {is_registered}")
     return db_beneficiary
 
 def get_beneficiaries(db: Session, user_id: str, skip: int = 0, limit: int = 100):
@@ -27,6 +36,11 @@ def update_beneficiary(db: Session, beneficiary_id: str, beneficiary_update: ben
         return None
     
     update_data = beneficiary_update.dict(exclude_unset=True)
+
+    if "email" in update_data:
+        existing_user = db.query(User).filter(User.email == update_data["email"]).first()
+        update_data["is_registered"] = existing_user is not None
+
     for key, value in update_data.items():
         setattr(db_beneficiary, key, value)
 
