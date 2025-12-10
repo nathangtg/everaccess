@@ -82,3 +82,22 @@ def get_assets_for_beneficiary(db: Session, beneficiary_id: str):
     ).all()
     
     return results
+
+def add_file_to_asset(db: Session, asset_id: str, file_name: str, file_path: str, file_type: str, file_size: int):
+    from ..database.models.asset_file import AssetFile
+    
+    db_file = AssetFile(
+        asset_id=asset_id,
+        file_name=file_name,
+        encrypted_file_path=file_path,
+        file_type=file_type,
+        file_size=file_size
+    )
+    db.add(db_file)
+    db.commit()
+    db.refresh(db_file)
+    return db_file
+
+def get_asset_file(db: Session, asset_id: str, file_id: str):
+    from ..database.models.asset_file import AssetFile
+    return db.query(AssetFile).filter(AssetFile.asset_id == asset_id, AssetFile.file_id == file_id).first()
