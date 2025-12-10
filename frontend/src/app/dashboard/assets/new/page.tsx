@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import { AssetCreate, Beneficiary } from '@/types';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Upload } from 'lucide-react';
 import Link from 'next/link';
 
 const ASSET_TYPES = [
@@ -21,6 +21,7 @@ export default function NewAssetPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
+  const [file, setFile] = useState<File | null>(null);
   
   const [formData, setFormData] = useState<AssetCreate>({
     asset_type: 'login_credential',
@@ -52,6 +53,12 @@ export default function NewAssetPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0]);
+    }
+  };
+
   const handleBeneficiaryChange = (beneficiaryId: string) => {
     setFormData((prev) => {
       const current = prev.beneficiary_ids || [];
@@ -69,7 +76,22 @@ export default function NewAssetPage() {
     setError('');
 
     try {
-      await api.post('/assets/', formData);
+      // 1. Create the asset
+      const res = await api.post('/assets/', formData);
+      const newAsset = res.data;
+
+      // 2. Upload file if selected
+      if (file && newAsset.asset_id) {
+        const fileData = new FormData();
+        fileData.append('file', file);
+        
+        await api.post(`/assets/${newAsset.asset_id}/files/`, fileData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+      }
+
       router.push('/dashboard/assets');
     } catch (err) {
       console.error('Error creating asset:', err);
@@ -154,6 +176,28 @@ export default function NewAssetPage() {
                 placeholder="e.g., Personal, Work"
               />
             </div>
+          </div>
+          
+          <div className="border-t border-slate-100 pt-6 mt-6">
+             <h3 className="text-lg font-bold text-slate-900 mb-4">File Attachment</h3>
+             <div className="bg-slate-50 border border-slate-200 border-dashed rounded-xl p-6 text-center">
+                <input 
+                   type="file" 
+                   id="file-upload" 
+                   onChange={handleFileChange} 
+                   className="hidden" 
+                   accept=".pdf,.doc,.docx,.jpg,.png,.txt"
+                />
+                <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center justify-center">
+                   <Upload className="h-10 w-10 text-slate-400 mb-3" />
+                   <span className="text-sm font-medium text-slate-700 mb-1">
+                      {file ? file.name : "Click to upload a file"}
+                   </span>
+                   <span className="text-xs text-slate-500">
+                      {file ? `${(file.size / 1024).toFixed(2)} KB` : "PDF, Word, Image, or Text (Max 10MB)"}
+                   </span>
+                </label>
+             </div>
           </div>
 
           <div className="border-t border-slate-100 pt-6 mt-6">
