@@ -26,7 +26,9 @@ def trigger_inheritance_process(db: Session, user_id: str):
     1. Set User account_status to 'deceased'.
     2. Generate secure access tokens for all beneficiaries.
     3. Send notifications (emails) with the access link.
+    Returns: Dict[str, str] map of beneficiary_id -> raw_token
     """
+    generated_tokens = {}
     # 1. Update User Status
     user = db.query(user_model.User).filter(user_model.User.user_id == user_id).first()
     if user:
@@ -43,6 +45,7 @@ def trigger_inheritance_process(db: Session, user_id: str):
         
         for beneficiary in beneficiaries:
             raw_token = beneficiary_service.generate_access_token(db, beneficiary.beneficiary_id)
+            generated_tokens[beneficiary.beneficiary_id] = raw_token
             
             # 3. Mock Send Email
             # In a real app, use an email service
@@ -57,9 +60,11 @@ def trigger_inheritance_process(db: Session, user_id: str):
             db.add(beneficiary)
             
         db.commit()
+    return generated_tokens
 
 def approve_verification_request(db: Session, request_id: str, admin_id: str):
     db_request = get_verification_request(db, request_id)
+    tokens = {}
     if db_request:
         db_request.status = "approved"
         db_request.reviewed_by = admin_id
@@ -72,10 +77,10 @@ def approve_verification_request(db: Session, request_id: str, admin_id: str):
                 break
         
         if is_death_certificate:
-            trigger_inheritance_process(db, db_request.user_id)
+            tokens = trigger_inheritance_process(db, db_request.user_id)
 
         db.commit()
-    return db_request
+    return {"request": db_request, "tokens": tokens}
 
 def reject_verification_request(db: Session, request_id: str, admin_id: str, reason: str):
     db_request = get_verification_request(db, request_id)
