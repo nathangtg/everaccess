@@ -33,7 +33,7 @@ export default function NewCryptoPage() {
     setError('');
 
     try {
-      await api.post('/crypto/assets', formData);
+      await api.post('/crypto/', formData);
       router.push('/dashboard/crypto');
     } catch (err: any) {
       console.error('Error adding crypto asset:', err);
