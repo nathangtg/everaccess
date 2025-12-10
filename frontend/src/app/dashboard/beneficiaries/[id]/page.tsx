@@ -99,7 +99,7 @@ export default function EditBeneficiaryPage() {
 
         {!isRegistered && (
           <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-xl mb-6 text-sm flex items-start">
-            <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 mr-2 shrink-0 mt-0.5" />
             <div>
               <p className="font-bold">Not Registered</p>
               <p className="mt-1 opacity-90">
