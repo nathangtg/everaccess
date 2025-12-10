@@ -20,6 +20,7 @@ class BeneficiaryUpdate(BaseModel):
 
 class Beneficiary(BeneficiaryBase):
     beneficiary_id: str
+    is_registered: bool
 
     class Config:
         from_attributes = True
