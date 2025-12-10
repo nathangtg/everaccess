@@ -61,6 +61,8 @@ export default function EditAssetPage() {
           recovery_phone: asset.recovery_phone || '',
           notes: asset.notes || '',
           category: asset.category || '',
+          
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           beneficiary_ids: asset.beneficiaries ? asset.beneficiaries.map((b: any) => b.beneficiary_id) : [],
         });
       } catch (err) {
