@@ -17,6 +17,13 @@ export interface AuthResponse {
   token_type: string;
 }
 
+export interface AssetFile {
+  file_id: string;
+  file_name: string;
+  file_type?: string;
+  file_size?: number;
+}
+
 export interface Asset {
   asset_id: string;
   asset_type: 'login_credential' | 'crypto_wallet' | 'document' | 'social_media' | 'financial' | 'other';
@@ -29,6 +36,7 @@ export interface Asset {
   notes?: string;
   category?: string;
   beneficiaries?: Beneficiary[];
+  asset_files?: AssetFile[];
 }
 
 export interface AssetCreate {
