@@ -51,6 +51,7 @@ export interface Beneficiary {
   last_name?: string;
   phone_number?: string;
   relationship_type?: string;
+  is_registered: boolean;
 }
 
 export interface BeneficiaryCreate {
@@ -67,6 +68,8 @@ export interface CryptoAsset {
   wallet_address: string;
   balance_usd: number;
   balance_crypto: number;
+  asset_name?: string;
+  platform_name?: string;
 }
 
 export interface CryptoAssetCreate {
