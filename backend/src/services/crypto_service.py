@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from ..database.models import crypto_asset as crypto_asset_model, crypto_allocation as crypto_allocation_model, asset as asset_model
+from ..database.models import crypto_asset as crypto_asset_model, crypto_allocation as crypto_allocation_model, asset as asset_model, user as user_model, beneficiary as beneficiary_model
 from ..schemas import crypto as crypto_schema
 import uuid
 from datetime import datetime
@@ -65,19 +65,71 @@ def get_allocations_for_asset(db: Session, crypto_asset_id: str):
 
 def calculate_crypto_distribution(db: Session, crypto_asset_id: str):
     """Calculate and generate mock disbursements"""
-    asset = db.query(crypto_asset_model.CryptoAsset).filter(crypto_asset_model.CryptoAsset.crypto_asset_id == crypto_asset_id).first()
-    if not asset:
+    # 1. Fetch the original Asset and CryptoAsset
+    original_crypto_asset = db.query(crypto_asset_model.CryptoAsset).filter(crypto_asset_model.CryptoAsset.crypto_asset_id == crypto_asset_id).first()
+    if not original_crypto_asset:
+        return None
+    
+    original_asset = db.query(asset_model.Asset).filter(asset_model.Asset.asset_id == crypto_asset_id).first()
+    if not original_asset:
         return None
 
     allocations = get_allocations_for_asset(db, crypto_asset_id)
 
     for allocation in allocations:
-        allocation.allocated_amount_usd = asset.balance_usd * (allocation.percentage / 100)
-        allocation.allocated_amount_crypto = asset.balance_crypto * (allocation.percentage / 100)
+        # Calculate amounts
+        allocation.allocated_amount_usd = original_crypto_asset.balance_usd * (allocation.percentage / 100)
+        allocation.allocated_amount_crypto = original_crypto_asset.balance_crypto * (allocation.percentage / 100)
         allocation.mock_transaction_id = f"MOCK-{uuid.uuid4().hex[:16]}"
         allocation.disbursement_status = "disbursed"
         allocation.disbursed_at = datetime.now()
         db.add(allocation)
+        
+        # ------------------------------------------------------------------
+        # NEW: Clone Asset to Beneficiary's Account
+        # ------------------------------------------------------------------
+        # Find the beneficiary record to get the email
+        beneficiary = db.query(beneficiary_model.Beneficiary).filter(
+            beneficiary_model.Beneficiary.beneficiary_id == allocation.beneficiary_id
+        ).first()
+        
+        if beneficiary and beneficiary.email:
+            # Check if this beneficiary has a registered User account
+            beneficiary_user = db.query(user_model.User).filter(
+                user_model.User.email == beneficiary.email
+            ).first()
+            
+            if beneficiary_user:
+                print(f"Creating inherited asset for User {beneficiary_user.email} from allocation {allocation.allocation_id}")
+                
+                # 1. Create new Asset record
+                new_asset = asset_model.Asset(
+                    user_id=beneficiary_user.user_id,
+                    asset_type=original_asset.asset_type,
+                    platform_name=original_asset.platform_name,
+                    asset_name=f"{original_asset.asset_name} (Inherited)",
+                    category="Inherited Assets",
+                    username=original_asset.username,
+                    # In a real app, you might re-encrypt these or share the key
+                    password=original_asset.password,
+                    recovery_email=original_asset.recovery_email,
+                    notes=f"Inherited from {original_asset.user.first_name} {original_asset.user.last_name}. " + (original_asset.notes or "")
+                )
+                db.add(new_asset)
+                db.flush() # get new_asset.asset_id
+                
+                # 2. Create new CryptoAsset record with allocated balance
+                new_crypto_asset = crypto_asset_model.CryptoAsset(
+                    crypto_asset_id=new_asset.asset_id,
+                    wallet_type=original_crypto_asset.wallet_type,
+                    wallet_address=original_crypto_asset.wallet_address,
+                    # Set balance to the allocated amount
+                    balance_usd=allocation.allocated_amount_usd,
+                    balance_crypto=allocation.allocated_amount_crypto,
+                    private_key=original_crypto_asset.private_key, # In real app, consider security implications
+                    seed_phrase=original_crypto_asset.seed_phrase
+                )
+                db.add(new_crypto_asset)
 
     db.commit()
     return allocations

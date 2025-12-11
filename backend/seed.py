@@ -9,7 +9,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
 from sqlalchemy.orm import Session
 from src.database.connection import engine, SessionLocal
 from src.database.base import Base
-from src.database.models import User, Beneficiary, Asset, CryptoAsset, CryptoAllocation
+from src.database.models import User, Beneficiary, Asset, CryptoAsset, CryptoAllocation, AdminUser
 from src.utils.security import get_password_hash
 
 def seed_data():
@@ -44,6 +44,34 @@ def seed_data():
         )
         db.add(user)
         db.flush() # Flush to get user.user_id
+
+
+        # 1.5 Create Alice User (Beneficiary)
+        alice_user = User(
+            email="alice@example.com",
+            password_hash=get_password_hash("password123"),
+            first_name="Alice",
+            last_name="Demo",
+            phone_number="+15550200",
+            date_of_birth=datetime(1990, 8, 20),
+            account_status="active",
+            email_verified=True,
+            mfa_enabled=False
+        )
+        db.add(alice_user)
+        db.flush()
+
+        # 1.6 Create ZK Proof Validator Admin (System User)
+        zk_admin = AdminUser(
+            admin_id="zk-proof-validator",
+            email="zk-validator@everaccess.system",
+            password_hash=get_password_hash("system_password_secure_hash"),
+            first_name="ZK",
+            last_name="Validator",
+            role="verifier"
+        )
+        db.add(zk_admin)
+        db.flush()
 
         # 2. Create Multiple Beneficiaries
         beneficiaries_data = [
@@ -86,6 +114,7 @@ def seed_data():
 
         beneficiaries = []
         for beneficiary_data in beneficiaries_data:
+            is_alice = beneficiary_data["email"] == "alice@example.com"
             beneficiary = Beneficiary(
                 user_id=user.user_id,
                 email=beneficiary_data["email"],
@@ -94,7 +123,7 @@ def seed_data():
                 relationship_type=beneficiary_data["relationship_type"],
                 priority_level=beneficiary_data["priority_level"],
                 status="active",
-                is_registered=False
+                is_registered=is_alice
             )
             db.add(beneficiary)
             beneficiaries.append(beneficiary)
@@ -133,6 +162,16 @@ def seed_data():
                 "wallet_address": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNb",
                 "notes": "Stablecoin reserves"
             },
+            {
+                "type": "crypto_wallet",
+                "platform": "Solana",
+                "name": "Solana Staking Wallet",
+                "balance_usd": Decimal('12500.00'),
+                "balance_crypto": Decimal('150.0'),
+                "wallet_type": "solana",
+                "wallet_address": "HN7cABqLq46Es1jh92dQQisAq662SmxELLLsHHe4YWrH",
+                "notes": "Long-term staking"
+            },
             # Financial Accounts
             {
                 "type": "financial",
@@ -159,6 +198,22 @@ def seed_data():
                 "password": "encrypted_fidelity_password",
                 "category": "Investments"
             },
+            {
+                "type": "financial",
+                "platform": "E-Trade",
+                "name": "Stock Trading Account",
+                "username": "nathan.stocks",
+                "password": "encrypted_etrade_password",
+                "category": "Investments"
+            },
+            {
+                "type": "financial",
+                "platform": "Coinbase",
+                "name": "Exchange Account",
+                "username": "nathan.crypto",
+                "password": "encrypted_coinbase_password",
+                "category": "Investments"
+            },
             # Login Credentials
             {
                 "type": "login_credential",
@@ -182,6 +237,14 @@ def seed_data():
                 "name": "Domain Management",
                 "username": "nathan@domain.com",
                 "password": "encrypted_cloud_password",
+                "category": "Infrastructure"
+            },
+            {
+                "type": "login_credential",
+                "platform": "Dropbox",
+                "name": "Cloud Storage Archive",
+                "username": "nathan.files@gmail.com",
+                "password": "encrypted_dropbox_password",
                 "category": "Infrastructure"
             },
             # Social Media
@@ -297,7 +360,8 @@ def seed_data():
         print(f"Created {len(beneficiaries)} beneficiaries")
         print(f"Created {len(assets_data)} assets ({sum(1 for a in assets_data if a['type'] == 'crypto_wallet')} crypto wallets)")
         print(f"Created {len(allocation_examples)} crypto allocations")
-        print("Login with: demo@everaccess.com / password123")
+        print("Login as Benefactor: demo@everaccess.com / password123")
+        print("Login as Beneficiary: alice@example.com / password123")
 
     except Exception as e:
         print(f"Error seeding data: {e}")

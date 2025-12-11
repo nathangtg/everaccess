@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
-from ..database.models import verification_request as verification_request_model, verification_document as verification_document_model, user as user_model, access_rule as access_rule_model, beneficiary as beneficiary_model
+from ..database.models import verification_request as verification_request_model, verification_document as verification_document_model, user as user_model, access_rule as access_rule_model, beneficiary as beneficiary_model, asset as asset_model, crypto_asset as crypto_asset_model
 from ..schemas import verification as verification_schema
-from ..services import beneficiary_service
+from ..services import beneficiary_service, crypto_service
 
 def create_verification_request(db: Session, request: verification_schema.VerificationRequestCreate, beneficiary_id: str):
     db_request = verification_request_model.VerificationRequest(
@@ -26,6 +26,7 @@ def trigger_inheritance_process(db: Session, user_id: str):
     1. Set User account_status to 'deceased'.
     2. Generate secure access tokens for all beneficiaries.
     3. Send notifications (emails) with the access link.
+    4. Automatically disburse crypto assets.
     Returns: Dict[str, str] map of beneficiary_id -> raw_token
     """
     generated_tokens = {}
@@ -58,6 +59,12 @@ def trigger_inheritance_process(db: Session, user_id: str):
             
             beneficiary.notification_sent = True
             db.add(beneficiary)
+        
+        # 4. Auto-Distribute Crypto Assets
+        crypto_assets = db.query(crypto_asset_model.CryptoAsset).join(asset_model.Asset).filter(asset_model.Asset.user_id == user_id).all()
+        for crypto_asset in crypto_assets:
+            print(f"Distributing Crypto Asset: {crypto_asset.crypto_asset_id}")
+            crypto_service.calculate_crypto_distribution(db, crypto_asset.crypto_asset_id)
             
         db.commit()
     return generated_tokens
@@ -67,7 +74,11 @@ def approve_verification_request(db: Session, request_id: str, admin_id: str):
     tokens = {}
     if db_request:
         db_request.status = "approved"
-        db_request.reviewed_by = admin_id
+        # Only assign reviewed_by if it's a real admin ID (UUID format usually), 
+        # or handle the system case. For now, if it's "auto-system-approval", leave it None 
+        # to avoid FK constraint error since that ID doesn't exist in admin_users table.
+        if admin_id and admin_id != "auto-system-approval":
+            db_request.reviewed_by = admin_id
         
         # Check for death certificate
         is_death_certificate = False
