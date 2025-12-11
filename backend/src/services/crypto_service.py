@@ -85,6 +85,17 @@ def calculate_crypto_distribution(db: Session, crypto_asset_id: str):
         allocation.disbursed_at = datetime.now()
         db.add(allocation)
         
+        # Simulate Decryption and Disbursement
+        print(f"---------------------------------------------------")
+        print(f"DISBURSING CRYPTO ASSET: {original_crypto_asset.asset_name}")
+        print(f"Beneficiary: {allocation.beneficiary_id}")
+        print(f"Amount: {allocation.allocated_amount_crypto} {original_crypto_asset.wallet_type.upper()}")
+        print(f"Decrypting Private Key: {original_crypto_asset.private_key} using ZK-Proof derived key...")
+        print(f"Unlocking Wallet: {original_crypto_asset.wallet_address}")
+        print(f"Broadcasting Transaction: {allocation.mock_transaction_id}")
+        print(f"Status: CONFIRMED")
+        print(f"---------------------------------------------------")
+        
         # ------------------------------------------------------------------
         # NEW: Clone Asset to Beneficiary's Account
         # ------------------------------------------------------------------

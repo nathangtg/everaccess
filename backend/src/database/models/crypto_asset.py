@@ -14,7 +14,7 @@ from ..base import Base
 class CryptoAsset(Base):
     __tablename__ = "crypto_assets"
     crypto_asset_id = Column(String(36), ForeignKey("assets.asset_id"), primary_key=True)
-    wallet_type = Column(Enum("bitcoin", "ethereum", "usdt", "solana", name="wallet_type_enum"))
+    wallet_type = Column(Enum("bitcoin", "ethereum", "usdt", "solana", "xrp", "cardano", "polkadot", "usdc", name="wallet_type_enum"))
     wallet_address = Column(String(255))
     private_key = Column(String(512))  # Encrypted
     seed_phrase = Column(String(512))  # Encrypted

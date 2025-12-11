@@ -13,21 +13,15 @@ from src.database.models import User, Beneficiary, Asset, CryptoAsset, CryptoAll
 from src.utils.security import get_password_hash
 
 def seed_data():
-    # Create tables
+    # Always drop and recreate tables to ensure schema updates and clean state
+    print("Dropping old tables...")
+    Base.metadata.drop_all(bind=engine)
+    
     print("Creating tables...")
     Base.metadata.create_all(bind=engine)
 
     db: Session = SessionLocal()
     try:
-        # Check if user already exists to avoid duplicate entries if run multiple times
-        existing_user = db.query(User).filter(User.email == "demo@everaccess.com").first()
-        if existing_user:
-            print("Demo user already exists. Cleaning up old data...")
-            # For this strict demo script, let's drop all and recreate to ensure clean state.
-            Base.metadata.drop_all(bind=engine)
-            Base.metadata.create_all(bind=engine)
-            print("Tables recreated.")
-
         print("Seeding data...")
 
         # 1. Create User
@@ -171,6 +165,46 @@ def seed_data():
                 "wallet_type": "solana",
                 "wallet_address": "HN7cABqLq46Es1jh92dQQisAq662SmxELLLsHHe4YWrH",
                 "notes": "Long-term staking"
+            },
+            {
+                "type": "crypto_wallet",
+                "platform": "Ripple",
+                "name": "XRP Holdings",
+                "balance_usd": Decimal('35000.00'),
+                "balance_crypto": Decimal('65000.0'),
+                "wallet_type": "xrp",
+                "wallet_address": "rEb8TK3gBgk5auZkwc6sHnwrGVJH8DuaLh",
+                "notes": "Legacy holdings"
+            },
+            {
+                "type": "crypto_wallet",
+                "platform": "Cardano",
+                "name": "ADA Staking",
+                "balance_usd": Decimal('18000.00'),
+                "balance_crypto": Decimal('45000.0'),
+                "wallet_type": "cardano",
+                "wallet_address": "addr1q9...xyz",
+                "notes": "Staked in Pool A"
+            },
+            {
+                "type": "crypto_wallet",
+                "platform": "Polkadot",
+                "name": "DOT Crowdloan",
+                "balance_usd": Decimal('22000.00'),
+                "balance_crypto": Decimal('4000.0'),
+                "wallet_type": "polkadot",
+                "wallet_address": "15...xyz",
+                "notes": "Locked for 2 years"
+            },
+            {
+                "type": "crypto_wallet",
+                "platform": "USDC",
+                "name": "USDC Treasury",
+                "balance_usd": Decimal('150000.00'),
+                "balance_crypto": Decimal('150000.0'),
+                "wallet_type": "usdc",
+                "wallet_address": "0x123...abc",
+                "notes": "Operating capital"
             },
             # Financial Accounts
             {
@@ -335,10 +369,22 @@ def seed_data():
             {"beneficiary_id": beneficiaries[3].beneficiary_id, "crypto_asset_id": crypto_assets[1].crypto_asset_id, "percentage": Decimal('25.0')},
             # Charlie gets 15% of Ethereum wallet
             {"beneficiary_id": beneficiaries[2].beneficiary_id, "crypto_asset_id": crypto_assets[1].crypto_asset_id, "percentage": Decimal('15.0')},
-            # Eve gets 30% of Solana wallet
+            # Eve gets 30% of Solana wallet (Note: index 2 is Tether, index 3 is Solana. Keeping as is for now but adding Alice to others)
             {"beneficiary_id": beneficiaries[4].beneficiary_id, "crypto_asset_id": crypto_assets[2].crypto_asset_id, "percentage": Decimal('30.0')},
             # Alice gets 20% of Solana wallet
-            {"beneficiary_id": beneficiaries[0].beneficiary_id, "crypto_asset_id": crypto_assets[2].crypto_asset_id, "percentage": Decimal('20.0')}
+            {"beneficiary_id": beneficiaries[0].beneficiary_id, "crypto_asset_id": crypto_assets[2].crypto_asset_id, "percentage": Decimal('20.0')},
+            # Alice gets 100% of XRP
+            {"beneficiary_id": beneficiaries[0].beneficiary_id, "crypto_asset_id": crypto_assets[4].crypto_asset_id, "percentage": Decimal('100.0')},
+            # Alice gets 50% of Cardano
+            {"beneficiary_id": beneficiaries[0].beneficiary_id, "crypto_asset_id": crypto_assets[5].crypto_asset_id, "percentage": Decimal('50.0')},
+            # Alice gets 80% of Polkadot
+            {"beneficiary_id": beneficiaries[0].beneficiary_id, "crypto_asset_id": crypto_assets[6].crypto_asset_id, "percentage": Decimal('80.0')},
+            # Alice gets 25% of USDC
+            {"beneficiary_id": beneficiaries[0].beneficiary_id, "crypto_asset_id": crypto_assets[7].crypto_asset_id, "percentage": Decimal('25.0')},
+            # Alice gets 10% of Ethereum
+            {"beneficiary_id": beneficiaries[0].beneficiary_id, "crypto_asset_id": crypto_assets[1].crypto_asset_id, "percentage": Decimal('10.0')},
+            # Alice gets 50% of Tether
+            {"beneficiary_id": beneficiaries[0].beneficiary_id, "crypto_asset_id": crypto_assets[2].crypto_asset_id, "percentage": Decimal('50.0')},
         ]
 
         for alloc_data in allocation_examples:

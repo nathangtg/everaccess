@@ -5,7 +5,7 @@ WORKDIR /app
 COPY . .
 
 RUN chmod +x start.sh
-RUN pip install --no-cache-dir .
+RUN pip install --default-timeout=100 --no-cache-dir .
 
 EXPOSE 8000
 
